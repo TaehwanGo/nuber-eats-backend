@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import * as Joi from 'joi'; // typescript에서 javascript 패키지를 import하는 방법
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +12,14 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       isGlobal: true, // app의 어디에서든 config module에 접근 가능한지 여부
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
       ignoreEnvFile: process.env.NODE_ENV === 'prod', // 서버에 deploy할때 .env파일(environment variable파일)을 사용하지 않겠다는 것
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('dev', 'prod').required(),
+        DB_HOST: Joi.string().required(), // 어떻게 .env파일에 있는 변수들을 process.env. 를 붙이지 않고 바로 쓸 수 있는거지?
+        DB_PORT: Joi.string().required(),
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+      }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

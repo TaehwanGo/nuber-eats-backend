@@ -6,7 +6,7 @@ import { RestaurantService } from './restaurants.service';
 // resolver : controller 에서 service(구체적 구현)까지 다 구현한 것
 @Resolver(() => Restaurant) // entity에서 만든 Restaurant objectType을 resolver가 반환할 것임을 알려 줌
 export class RestaurantsResolver {
-  constructor(private readonly restaurantService: RestaurantService) {}
+  constructor(private readonly restaurantService: RestaurantService) {} // **3. resolver에 service를 import (providers에 등록된)
 
   @Query(() => [Restaurant]) // controller라면 @Get 이나 @Post 였겠지만 graphql은 @Query나 @Mutation
   restaurant(): Promise<Restaurant[]> {

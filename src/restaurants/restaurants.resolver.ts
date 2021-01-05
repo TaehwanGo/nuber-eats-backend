@@ -16,9 +16,17 @@ export class RestaurantsResolver {
     return this.restaurantService.getAll();
   }
   @Mutation(() => Boolean)
-  createRestaurant(@Args() createRestaurantDTO: CreateRestaurantDTO): boolean {
+  async createRestaurant(
+    @Args('input') createRestaurantDTO: CreateRestaurantDTO,
+  ): Promise<boolean> {
     // Args를 하나하나 적어주는 것을 받는 것과 똑같은데 여기서 볼땐 더 깔끔하게 보임
-    console.log(createRestaurantDTO);
-    return true;
+    // 여전히 data가 잘 저장 됐는지를 boolean으로 return 하기 위해 async await을 사용
+    try {
+      await this.restaurantService.createRestaurant(createRestaurantDTO);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }

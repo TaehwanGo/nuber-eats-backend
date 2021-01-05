@@ -1,5 +1,5 @@
-import { ArgsType, Field } from '@nestjs/graphql';
-import { IsBoolean, IsString, Length } from 'class-validator';
+import { InputType, OmitType } from '@nestjs/graphql';
+import { Restaurant } from '../entities/restaurant.entitiy';
 
 /** resolver의 Mutation의 createRestaurant의 Args들이 아래와 같이 항목에서 DTO로 변경
  * @Args('name') name: string,
@@ -7,22 +7,10 @@ import { IsBoolean, IsString, Length } from 'class-validator';
     @Args('address') address: string,
     @Args('ownerName') ownerName: string,
  */
-@ArgsType()
-export class CreateRestaurantDTO {
-  @Field(() => String)
-  @IsString()
-  @Length(5, 10) // name의 length는 min:5, max: 10 <- validation pipe line을 만들어야 동작함(main.ts)
-  name: string;
-
-  @Field(() => Boolean)
-  @IsBoolean()
-  isVegan: boolean;
-
-  @Field(() => String)
-  @IsString()
-  address: string;
-
-  @Field(() => String)
-  @IsString()
-  ownerName: string;
-}
+@InputType() // resolver에서 @Args()를 @Args('input')으로 수정 - Omit Mapped Types를 사용하는데 InputType을 만들기 때문
+export class CreateRestaurantDTO extends OmitType(
+  Restaurant,
+  ['id'],
+  InputType,
+) {} // InputType을 필요로 하는데 entity(Restaurant)는 objectType임 그래서 option으로 InputType을 원한다고 적어줌
+// parent(상속개념에서) : Restautant(ObjectType), InputType을 옵션으로 넘겨줌으로써 parentType을 InputType으로 변경

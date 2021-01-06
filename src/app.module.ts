@@ -5,7 +5,10 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // import { join } from 'path';
 import { RestaurantsModule } from './restaurants/restaurants.module';
-import { Restaurant } from './restaurants/entities/restaurant.entitiy';
+// import { Restaurant } from './restaurants/entities/restaurant.entitiy';
+import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
+import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -32,12 +35,14 @@ import { Restaurant } from './restaurants/entities/restaurant.entitiy';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod', // TypeORM이 데이터베이스에 연결할 때 DB를 나의 모듈의 현재 상태로 마이그레이션 한다는 뜻
       logging: process.env.NODE_ENV !== 'prod',
-      entities: [Restaurant], // **1. 이것 덕분에 Restaurant가 DB가 되는 것
+      entities: [User], // **1. entities: [Restaurant] 이것 덕분에 Restaurant가 DB가 되는 것
     }),
-    GraphQLModule.forRoot({
-      autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
-    }),
-    RestaurantsModule, // resolver module
+    // GraphQLModule.forRoot({
+    //   autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
+    // }),
+    // RestaurantsModule,
+    UsersModule,
+    CommonModule, // resolver module
   ],
   controllers: [],
   providers: [],

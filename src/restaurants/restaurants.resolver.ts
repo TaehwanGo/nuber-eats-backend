@@ -1,5 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateRestaurantDTO } from './dtos/create-restaurant.dto';
+import { UpdateRestaurantDTO } from './dtos/update-restaurant.dto';
 import { Restaurant } from './entities/restaurant.entitiy';
 import { RestaurantService } from './restaurants.service';
 
@@ -27,6 +28,20 @@ export class RestaurantsResolver {
       return true;
     } catch (error) {
       console.log(error);
+      return false;
+    }
+  }
+
+  @Mutation((returns) => Boolean)
+  async updateRestaurant(
+    // id를 전달하는 방법 1. Args로 전달 - 많은 args를 전달하는 방법을 좋아하지 않기때문에 이것을 합칠 것임 : 방법 2
+    @Args() updateRestaurantDTO: UpdateRestaurantDTO,
+  ): Promise<boolean> {
+    try {
+      await this.restaurantService.updateRestaurant(updateRestaurantDTO);
+      return true;
+    } catch (e) {
+      console.log(e);
       return false;
     }
   }

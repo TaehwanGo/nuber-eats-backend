@@ -21,15 +21,17 @@ export class UsersResolver {
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
-      const error = await this.usersService.createAccount(createAccountInput);
+      const { ok, error } = await this.usersService.createAccount(
+        createAccountInput,
+      );
       if (error) {
         // go 언어 방식의 silent error handling
         return {
-          ok: false,
+          ok,
           error,
         };
       }
-      return { ok: true };
+      return { ok };
     } catch (error) {
       return { ok: false, error };
     }

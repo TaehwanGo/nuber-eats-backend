@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly config: ConfigService,
+    private readonly config: ConfigService, // app.module에서 ConfigModule을 import하면 ConfigService를 사용할 수 있음
   ) {
     // console.log(this.config.get('SECRET_KEY'));
   }
@@ -66,9 +66,10 @@ export class UsersService {
         };
       }
       const token = jwt.sign({ id: user.id }, this.config.get('SECRET_KEY')); // process.env.SECRET_KEY == this.config.get('SECRET_KEY')
+      // jwt.sign({ id: user.id }, this.config.get('SECRET_KEY'));를 this.jwt.sign()으로 바꾸기 위해 jwt 모듈 생성
       return {
         ok: true,
-        token: 'lalalala',
+        token,
       };
     } catch (error) {
       return {

@@ -68,7 +68,7 @@ export class UsersService {
           error: 'Wrong password',
         };
       }
-      const token = this.jwtService.sign({ id: user.id }); // jwt.sign({ id: user.id }, this.config.get('SECRET_KEY')); // process.env.SECRET_KEY == this.config.get('SECRET_KEY')
+      const token = this.jwtService.sign(user.id); // jwt.sign({ id: user.id }, this.config.get('SECRET_KEY')); // process.env.SECRET_KEY == this.config.get('SECRET_KEY')
       // jwt.sign({ id: user.id }, this.config.get('SECRET_KEY'));를 this.jwt.sign()으로 바꾸기 위해 jwt 모듈 생성
       return {
         ok: true,

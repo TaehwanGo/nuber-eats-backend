@@ -15,7 +15,7 @@ import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
-import { jwtMiddleware } from './jwt/jwt.middleware'; // JwtMiddleware
+import { JwtMiddleware } from './jwt/jwt.middleware';
 
 @Module({
   imports: [
@@ -56,14 +56,15 @@ import { jwtMiddleware } from './jwt/jwt.middleware'; // JwtMiddleware
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  //  implements NestModule
-  // configure(consumer: MiddlewareConsumer) { // main.ts에 app.use(jwtMiddleware); 를 추가 하는 것으로 대체 됨 : app전체에 적용
-  //   // app 전체에 적용할 middleware 설정
-  //   consumer.apply(jwtMiddleware).forRoutes({
-  //     // JwtMiddleware(class)에서 function으로 바꿈
-  //     path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
-  //     method: RequestMethod.ALL,
-  //   });
-  // }
+export class AppModule implements NestModule {
+  // app.use() requires a middleware function // 다시 app.module에서 아래와 같은 방식으로 middleware를 추가함
+  configure(consumer: MiddlewareConsumer) {
+    // main.ts에 app.use(jwtMiddleware); 를 추가 하는 것으로 대체 됨 : app전체에 적용
+    // app 전체에 적용할 middleware 설정
+    consumer.apply(JwtMiddleware).forRoutes({
+      // JwtMiddleware(class)에서 function으로 바꿈
+      path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
+      method: RequestMethod.ALL,
+    });
+  }
 }

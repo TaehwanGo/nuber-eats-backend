@@ -14,4 +14,8 @@ export class JwtService {
     // sign(payload: object) 과 같이 object로 받아서 사용하면 여러 다른 모듈에서도 사용가능하지만 우린 여기서만 사용하게 만듦
     return jwt.sign({ id: userId }, this.options.privateKey);
   }
+  verify(token: string) {
+    // token은 middleware에서 받고 왜 verify는 service에서 하지? jwt관련 기능(함수)을 service로 분리 후 다른곳(middleware)에서 dependency injection해서 사용
+    return jwt.verify(token, this.options.privateKey);
+  }
 }

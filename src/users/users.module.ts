@@ -9,5 +9,6 @@ import { UsersService } from './users.service';
 @Module({
   imports: [TypeOrmModule.forFeature([User])], // service에 필요한 repository를 등록(TypeOrmModule)
   providers: [UsersResolver, UsersService], // app.module에서 ConfigModule을 import하면 ConfigService를 사용할 수 있음
+  exports: [UsersService],
 })
 export class UsersModule {}

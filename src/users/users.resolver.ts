@@ -38,4 +38,11 @@ export class UsersResolver {
       };
     }
   }
+
+  @Query((returns) => User)
+  me() {
+    // 지금 로그인 되어 있는 user가 누구인지 반환하는 함수
+    // 요청이 들어올때 REQUEST HEADERS에 있는 token을 받음 : jwt.middleware를 만들어서 토큰을 다룸 // main.ts에 추가 됨(app전체에 적용)
+    // HTTP headers를 활용하는 방법을 사용
+  }
 }

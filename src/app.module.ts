@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import * as Joi from 'joi'; // typescript에서 javascript 패키지를 import하는 방법
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -10,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
+import { jwtMiddleware } from './jwt/jwt.middleware'; // JwtMiddleware
 
 @Module({
   imports: [
@@ -50,4 +56,14 @@ import { JwtModule } from './jwt/jwt.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  //  implements NestModule
+  // configure(consumer: MiddlewareConsumer) { // main.ts에 app.use(jwtMiddleware); 를 추가 하는 것으로 대체 됨 : app전체에 적용
+  //   // app 전체에 적용할 middleware 설정
+  //   consumer.apply(jwtMiddleware).forRoutes({
+  //     // JwtMiddleware(class)에서 function으로 바꿈
+  //     path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
+  //     method: RequestMethod.ALL,
+  //   });
+  // }
+}

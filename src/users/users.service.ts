@@ -87,11 +87,20 @@ export class UsersService {
     return this.users.findOne({ id });
   }
 
-  async editProfile(userId: number, editProfileInput: EditProfileInput) {
+  async editProfile(userId: number, { email, password }: EditProfileInput) {
     // { email, password } 로 가져오면 password가 보내지지 않은 경우 undefined으로 가져오지만
     // console.log(userId, email, password);
-    console.log(editProfileInput); // [Object: null prototype] { email: 'qwer@asdf.com' }
-    console.log({ ...editProfileInput }); // { email: 'qwer@asdf.com' }
-    return this.users.update(userId, { ...editProfileInput }); // db에 entity가 있는지 확인은 안하지만 로그인상태가 아니면 editProfile을 할 수 없기 때문에 괜찮음 - userId는 graphql이 아닌 token에서 오기 때문
+    // console.log(editProfileInput); // [Object: null prototype] { email: 'qwer@asdf.com' }
+    // console.log({ ...editProfileInput }); // { email: 'qwer@asdf.com' }
+    const user = await this.users.findOne(userId);
+    if (email) {
+      // 나중에 여기에 email verification을 추가 할 것임
+      user.email = email;
+    }
+    if (password) {
+      user.password = password;
+    }
+    // return this.users.update(userId, { ...editProfileInput }); // db에 entity가 있는지 확인은 안하지만 로그인상태가 아니면 editProfile을 할 수 없기 때문에 괜찮음 - userId는 graphql이 아닌 token에서 오기 때문
+    return this.users.save(user);
   }
 }

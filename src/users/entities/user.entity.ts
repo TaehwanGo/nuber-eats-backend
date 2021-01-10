@@ -38,7 +38,7 @@ export class User extends CoreEntity {
   role: UserRole;
 
   @BeforeInsert()
-  @BeforeUpdate() // 왜 BeforeUpdate()가 실행되지 않을까? see you on the next on :)
+  @BeforeUpdate() // 왜 BeforeUpdate()가 실행되지 않을까? 저장할 때 Repository.update() -> save()로 변경
   async hashPassword(): Promise<void> {
     try {
       this.password = await bcrypt.hash(this.password, 10);

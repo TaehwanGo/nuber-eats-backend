@@ -16,15 +16,15 @@ export class JwtMiddleware implements NestMiddleware {
       //   console.log(req.headers['x-jwt']);
       // client로 부터 받은 token을 verify
       const token = req.headers['x-jwt'];
-      const decoded = this.jwtService.verify(token); // token.toString()
-      if (typeof decoded === 'object' && decoded.hasOwnProperty('id')) {
-        // console.log(decoded['id']);
-        try {
+      try {
+        const decoded = this.jwtService.verify(token); // token.toString()
+        if (typeof decoded === 'object' && decoded.hasOwnProperty('id')) {
+          // console.log(decoded['id']);
           const user = await this.usersService.findById(decoded['id']); // usersService를 사용하는 이유는 usersService에 Repository가 있기 때문
           //   console.log(user);
           req['user'] = user; // 이것을 graphql resolver로 보내야 됨 // graphql모듈은 apollo server에서 모든 것을 가져와서 사용가능(import { ApolloServerBase } from 'apollo-server-core';)
-        } catch (e) {}
-      }
+        }
+      } catch (e) {}
     }
     next();
   }

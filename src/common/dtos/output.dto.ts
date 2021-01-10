@@ -1,7 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class MutationOutput {
+export class CoreOutput {
+  // CoreOutput으로 이름 변경 예정
   @Field((type) => String, { nullable: true })
   error?: string;
 

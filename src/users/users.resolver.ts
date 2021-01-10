@@ -8,17 +8,13 @@ import {
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User) // 여기에 function() : (of) => User은 왜 arg로 넣는거지? // of => User
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
-
-  @Query((returns) => Boolean)
-  hi() {
-    return true;
-  }
 
   @Mutation((returns) => CreateAccountOutput) // createAccountOutput : create-account.dto
   async creatAccount(
@@ -47,5 +43,27 @@ export class UsersResolver {
   me(@AuthUser() authUser: User) {
     // console.log(authUser);
     return authUser;
+  }
+
+  @UseGuards(AuthGuard) // protected end point : guard를 사용하겠다는 말
+  @Query((returns) => UserProfileOutput)
+  async userProfile(
+    @Args() userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    try {
+      const user = await this.usersService.findById(userProfileInput.userId);
+      if (!user) {
+        throw Error();
+      }
+      return {
+        ok: Boolean(user),
+        user,
+      };
+    } catch (err) {
+      return {
+        error: 'User not fount',
+        ok: false,
+      };
+    }
   }
 }

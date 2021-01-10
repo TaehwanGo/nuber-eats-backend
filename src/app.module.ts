@@ -47,6 +47,10 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
+      context: ({ req }) => {
+        console.log('GraphQLModule context start'); // query가 resolver에 들어오기 전까지 context는 실행이 안되기 때문에 middleware에서 생성한 user를 받을 수 있음
+        return { user: req['user'] };
+      }, // req:Request (JwtMiddleware)
     }),
     // RestaurantsModule,
     UsersModule,
@@ -61,10 +65,12 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // main.ts에 app.use(jwtMiddleware); 를 추가 하는 것으로 대체 됨 : app전체에 적용
     // app 전체에 적용할 middleware 설정
-    consumer.apply(JwtMiddleware).forRoutes({
-      // JwtMiddleware(class)에서 function으로 바꿈
-      path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
-      method: RequestMethod.ALL,
-    });
+    consumer
+      .apply(JwtMiddleware) //
+      .forRoutes({
+        // JwtMiddleware(class)에서 function으로 바꿈
+        path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
+        method: RequestMethod.POST,
+      });
   }
 }

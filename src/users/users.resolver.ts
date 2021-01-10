@@ -1,5 +1,5 @@
 // import { Query } from '@nestjs/common'; // Query는 common에서 import하는게 아니라
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql'; // graphql에서 import 해야 됨
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql'; // graphql에서 import 해야 됨
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -40,9 +40,15 @@ export class UsersResolver {
   }
 
   @Query((returns) => User)
-  me() {
+  me(@Context() context) {
     // 지금 로그인 되어 있는 user가 누구인지 반환하는 함수
     // 요청이 들어올때 REQUEST HEADERS에 있는 token을 받음 : jwt.middleware를 만들어서 토큰을 다룸 // main.ts에 추가 됨(app전체에 적용)
     // HTTP headers를 활용하는 방법을 사용
+    // console.log(context);
+    if (!context.user) {
+      return;
+    } else {
+      return context.user;
+    }
   }
 }

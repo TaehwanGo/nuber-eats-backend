@@ -7,6 +7,7 @@ import { LoginInput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from 'src/jwt/jwt.service';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -84,5 +85,13 @@ export class UsersService {
 
   async findById(id: number): Promise<User> {
     return this.users.findOne({ id });
+  }
+
+  async editProfile(userId: number, editProfileInput: EditProfileInput) {
+    // { email, password } 로 가져오면 password가 보내지지 않은 경우 undefined으로 가져오지만
+    // console.log(userId, email, password);
+    console.log(editProfileInput); // [Object: null prototype] { email: 'qwer@asdf.com' }
+    console.log({ ...editProfileInput }); // { email: 'qwer@asdf.com' }
+    return this.users.update(userId, { ...editProfileInput }); // db에 entity가 있는지 확인은 안하지만 로그인상태가 아니면 editProfile을 할 수 없기 때문에 괜찮음 - userId는 graphql이 아닌 token에서 오기 때문
   }
 }

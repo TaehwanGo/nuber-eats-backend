@@ -13,14 +13,21 @@ export class MailService {
     // this.sendEmail('testing', 'test', 'gth1123@naver.com'); // just for test // it's not working yet
   }
 
-  private async sendEmail(subject: string, content: string, userEmail: string) {
+  private async sendEmail(
+    subject: string,
+    template: string,
+    userEmail: string,
+  ) {
     // curl을 이용 : 콘솔에서 API를 이용하기 위한 것
     // nodejs엔 frontend의 fetch가 없음 - npm i got 사용
     const form = new FormData();
     form.append('from', `Excited User <mailgun@${this.options.domain}>`);
     form.append('to', userEmail);
     form.append('subject', subject);
-    form.append('text', content);
+    // form.append('text', content);
+    form.append('template', template); // 'verify-email'
+    form.append('v:code', 'asdfqwer');
+    form.append('v:username', 'tony');
 
     const response = await got(
       `https://api.mailgun.net/v3/${this.options.domain}/messages`,

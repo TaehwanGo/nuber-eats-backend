@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
 import { MailModuleOptions } from './mail.interfaces';
+import { MailService } from './mail.service';
 
 @Module({})
 export class MailModule {
@@ -14,8 +15,9 @@ export class MailModule {
           provide: CONFIG_OPTIONS,
           useValue: options,
         },
+        MailService,
       ],
-      exports: [], // 우리의 목적은 JwtModule만 import하면 JwtService도 사용 가능하게 하는 것(users.module에서)
+      exports: [MailService], // 우리의 목적은 JwtModule만 import하면 JwtService도 사용 가능하게 하는 것(users.module에서)
     };
   }
 }

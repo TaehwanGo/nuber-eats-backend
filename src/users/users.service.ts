@@ -65,7 +65,10 @@ export class UsersService {
 
     try {
       // 1. find the user with the email
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      ); // password가 selct: false이므로 {select:["password"]}를 추가함
       if (!user) {
         return {
           ok: false,
@@ -117,21 +120,27 @@ export class UsersService {
   }
 
   async verifyEmail(code: string): Promise<boolean> {
-    // verification을 찾아서 존재한다면 그것을 삭제 하고
-    // 그리고 그 verification과 연결된 user를 찾아서 verified를 true로 바꿈
-    const verification = await this.verifications.findOne(
-      { code },
-      { relations: ['user'] },
-      // { loadRelationIds: true }, // { relations: ['user']}, // related 된 user를 통째로 불러옴(verification entity안에 포함돼서)
-    );
-    if (verification) {
-      // console.log(verification, verification.user); // verification.user : undefined // TypeOrm은 자동으로 relation을 해주지 않음 : 느려지기 때문
-      verification.user.verified = true;
-      this.users.save(verification.user); // 만약 id만 가져온다면 this.users.update(verification.user.id, { verified: true });  이런식으로 업데이트 할 수 있을 것 같다.
-      // @BeforeInsert로 인해서 password가 다시 hash되버리는 문제 발생
-      // 1. password를 선택하지 않는 방법 : @Column({select:false})
-      // 2. @BeforeInsert의 hashPassword()에서 password가 있을 경우에만 hash : if(this.password)
+    try {
+      // verification을 찾아서 존재한다면 그것을 삭제 하고
+      // 그리고 그 verification과 연결된 user를 찾아서 verified를 true로 바꿈
+      const verification = await this.verifications.findOne(
+        { code },
+        { relations: ['user'] },
+        // { loadRelationIds: true }, // { relations: ['user']}, // related 된 user를 통째로 불러옴(verification entity안에 포함돼서)
+      );
+      if (verification) {
+        // console.log(verification, verification.user); // verification.user : undefined // TypeOrm은 자동으로 relation을 해주지 않음 : 느려지기 때문
+        verification.user.verified = true;
+        this.users.save(verification.user); // 만약 id만 가져온다면 this.users.update(verification.user.id, { verified: true });  이런식으로 업데이트 할 수 있을 것 같다.
+        // @BeforeInsert로 인해서 password가 다시 hash되버리는 문제 발생
+        // 1. password를 선택하지 않는 방법 : @Column({select:false}) - user.entity
+        // 2. @BeforeInsert의 hashPassword()에서 password가 있을 경우에만 hash : if(this.password)
+        return true;
+      }
+      throw new Error();
+    } catch (err) {
+      console.log(err);
+      return false;
     }
-    return false;
   }
 }

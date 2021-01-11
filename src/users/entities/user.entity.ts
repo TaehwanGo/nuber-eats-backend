@@ -37,6 +37,10 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field((type) => Boolean)
+  verified: boolean;
+
   @BeforeInsert()
   @BeforeUpdate() // 왜 BeforeUpdate()가 실행되지 않을까? 저장할 때 Repository.update() -> save()로 변경
   async hashPassword(): Promise<void> {

@@ -8,12 +8,14 @@ import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from 'src/jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly config: ConfigService, // app.module에서 ConfigModule을 import하면 ConfigService를 사용할 수 있음
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {
     // console.log(this.config.get('SECRET_KEY'));
@@ -35,7 +37,15 @@ export class UsersService {
         return { ok: false, error: 'There is a user with that email already' };
       }
       // create user & save it
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      await this.verifications.save(
+        this.verifications.create({
+          // code:123123,
+          user,
+        }),
+      );
       return { ok: true };
     } catch (e) {
       // return error instead of throw it, 대신 resolver에서 설정을 해줄 필요가 있음
@@ -96,11 +106,32 @@ export class UsersService {
     if (email) {
       // 나중에 여기에 email verification을 추가 할 것임
       user.email = email;
+      user.verified = false;
+      await this.verifications.save(this.verifications.create({ user }));
     }
     if (password) {
       user.password = password;
     }
     // return this.users.update(userId, { ...editProfileInput }); // db에 entity가 있는지 확인은 안하지만 로그인상태가 아니면 editProfile을 할 수 없기 때문에 괜찮음 - userId는 graphql이 아닌 token에서 오기 때문
     return this.users.save(user);
+  }
+
+  async verifyEmail(code: string): Promise<boolean> {
+    // verification을 찾아서 존재한다면 그것을 삭제 하고
+    // 그리고 그 verification과 연결된 user를 찾아서 verified를 true로 바꿈
+    const verification = await this.verifications.findOne(
+      { code },
+      { relations: ['user'] },
+      // { loadRelationIds: true }, // { relations: ['user']}, // related 된 user를 통째로 불러옴(verification entity안에 포함돼서)
+    );
+    if (verification) {
+      // console.log(verification, verification.user); // verification.user : undefined // TypeOrm은 자동으로 relation을 해주지 않음 : 느려지기 때문
+      verification.user.verified = true;
+      this.users.save(verification.user); // 만약 id만 가져온다면 this.users.update(verification.user.id, { verified: true });  이런식으로 업데이트 할 수 있을 것 같다.
+      // @BeforeInsert로 인해서 password가 다시 hash되버리는 문제 발생
+      // 1. password를 선택하지 않는 방법 : @Column({select:false})
+      // 2. @BeforeInsert의 hashPassword()에서 password가 있을 경우에만 hash : if(this.password)
+    }
+    return false;
   }
 }

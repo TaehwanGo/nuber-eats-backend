@@ -12,6 +12,7 @@ import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
 import { UserProfileOutput } from './dtos/user-profile.dto';
 import { VerifyEmailOutput } from './dtos/verifty-email.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,7 @@ export class UsersService {
     @InjectRepository(Verification)
     private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {
     // console.log(this.config.get('SECRET_KEY'));
     // this.jwtService.hello();
@@ -43,12 +45,14 @@ export class UsersService {
       const user = await this.users.save(
         this.users.create({ email, password, role }),
       );
-      await this.verifications.save(
+      const verification = await this.verifications.save(
         this.verifications.create({
           // code:123123,
           user,
         }),
       );
+      // email verification
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return { ok: true };
     } catch (e) {
       // return error instead of throw it, 대신 resolver에서 설정을 해줄 필요가 있음
@@ -113,13 +117,17 @@ export class UsersService {
     userId: number,
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    const user = await this.users.findOne(userId);
     try {
       const user = await this.users.findOne(userId);
       if (email) {
         user.email = email;
         user.verified = false;
-        await this.verifications.save(this.verifications.create({ user }));
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        console.log('editProfile email:', user.email);
+        console.log('verification.code:', verification.code);
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
       if (password) {
         user.password = password;

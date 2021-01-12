@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
-import { MailModuleOptions } from './mail.interfaces';
+import { EmailVar, MailModuleOptions } from './mail.interfaces';
 import got from 'got';
 import * as FormData from 'form-data'; // TypeError: form_data_1.default is not a constructor : * as 추가함
 
@@ -16,25 +16,28 @@ export class MailService {
   private async sendEmail(
     subject: string,
     template: string,
-    userEmail: string,
+    // userEmail: string,
+    emailVars: EmailVar[],
   ) {
     // curl을 이용 : 콘솔에서 API를 이용하기 위한 것
     // nodejs엔 frontend의 fetch가 없음 - npm i got 사용
     const form = new FormData();
-    form.append('from', `Excited User <mailgun@${this.options.domain}>`);
-    form.append('to', userEmail);
+    form.append(
+      'from',
+      `Tony from Nuber Eats <mailgun@${this.options.domain}>`,
+    );
+    form.append('to', 'gth1123@naver.com'); // Sandbox domains are restricted to authorized recipients only.
     form.append('subject', subject);
     // form.append('text', content);
     form.append('template', template); // 'verify-email'
-    form.append('v:code', 'asdfqwer');
-    form.append('v:username', 'tony');
-
-    const response = await got(
-      `https://api.mailgun.net/v3/${this.options.domain}/messages`,
-      {
-        https: {
-          rejectUnauthorized: false, // 나중에 prod 에선 삭제 해야 됨
-        },
+    // form.append('v:code', 'asdfqwer');
+    // form.append('v:username', 'tony');
+    emailVars.forEach((eVar) => form.append(`v:${eVar.key}`, eVar.value));
+    try {
+      await got(`https://api.mailgun.net/v3/${this.options.domain}/messages`, {
+        // https: {
+        //   rejectUnauthorized: false, // 나중에 prod 에선 삭제 해야 됨
+        // },
         method: 'POST',
         headers: {
           Authorization: `Basic ${Buffer.from(
@@ -43,11 +46,21 @@ export class MailService {
         },
         body: form,
         // body: 'testing body text',
-      },
-    );
+      });
+    } catch (error) {
+      console.log('error from sendEmail:', error); // email이 안보내진다고 뭔가 서버에러를 일으키는것을 사용자는 원하지 않음
+    }
+
     // console.log(
     //   `Basic ${Buffer.from(`api:${this.options.apiKey}`).toString('base64')}`,
     // );
-    console.log('mailgun response', response.body);
+    // console.log('mailgun response', response.body);
+  }
+
+  sendVerificationEmail(email: string, code: string) {
+    this.sendEmail('Verify Your Email', 'verify-email', [
+      { key: 'code', value: code },
+      { key: 'username', value: email },
+    ]); // subject: string,    template: string,    userEmail: string,    emailVars: EmailVar[]
   }
 }

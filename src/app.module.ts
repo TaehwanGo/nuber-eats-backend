@@ -1,4 +1,5 @@
 import {
+  Global,
   MiddlewareConsumer,
   Module,
   NestModule,

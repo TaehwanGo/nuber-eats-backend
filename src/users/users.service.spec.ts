@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
 import { MailService } from 'src/mail/mail.service';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Verification } from './entities/verification.entity';
 import { UsersService } from './users.service';
@@ -20,8 +21,13 @@ const mockMailService = {
   sendVerificationEmail: jest.fn(),
 };
 
+type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>; // Partial<Record<keyof Repository<User>, jest.Mock>>
+
 describe('UserService', () => {
   let service: UsersService;
+  let usersRepository: MockRepository<User>; // get all the function from the Repository
+  // Partial : make all the properties optional
+  // Record<K, T> : set of property type K of T
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       providers: [
@@ -45,13 +51,18 @@ describe('UserService', () => {
       ],
     }).compile();
     service = module.get<UsersService>(UsersService);
+    usersRepository = module.get(getRepositoryToken(User));
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it.todo('createAccount');
+  // it.todo('createAccount');
+  describe('createAccount', () => {
+    it('should fail if user exists', async () => {});
+  });
+
   it.todo('login');
   it.todo('findById');
   it.todo('editProfile');

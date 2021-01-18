@@ -4,6 +4,8 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { getConnection } from 'typeorm';
 
+const GRAPHQL_ENDPOINT = '/graphql';
+
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
 
@@ -21,9 +23,36 @@ describe('UserModule (e2e)', () => {
     await getConnection().dropDatabase();
     app.close(); // for Jest did not exit one second after the test run has completed
   });
-
-  it.todo('creatAccount'); // e2e test를 beforeAll에서 한번 db연결후 계속 이어서 하기 때문에
-  it.todo('verifyEmail'); // test 순서를 잘 고려해야 함
+  // e2e test를 beforeAll에서 한번 db연결후 계속 이어서 하기 때문에 test 순서를 잘 고려해야 함
+  // it.todo('creatAccount');
+  describe('creatAccount', () => {
+    const EMAIL = 'asdf@asdf.com';
+    it('should create account', () => {
+      // supertest를 이용해서 request를 보냄
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+        mutation {
+          creatAccount(input: {
+            email: "${EMAIL}",
+            password: "789456",
+            role: Client
+          }) {
+            ok
+            error
+          }
+        }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          console.log(res.body);
+          expect(res.body.data.createAccount.ok).toBe(true);
+          expect(res.body.data.createAccount.error).toBe(null);
+        });
+    });
+  });
+  it.todo('verifyEmail');
   it.todo('login');
   it.todo('me');
   it.todo('userProfile');

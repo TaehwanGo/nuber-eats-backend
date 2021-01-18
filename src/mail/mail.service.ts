@@ -48,6 +48,7 @@ export class MailService {
         // body: 'testing body text',
       });
     } catch (error) {
+      // e2e : Cannot log after tests are done. Did you forget to wait for something async in your test? // mailgun has been disabled
       console.log('error from sendEmail:', error); // email이 안보내진다고 뭔가 서버에러를 일으키는것을 사용자는 원하지 않음
     }
 

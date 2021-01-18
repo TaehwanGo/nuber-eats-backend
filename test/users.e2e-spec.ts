@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { getConnection } from 'typeorm';
 
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
@@ -15,10 +16,16 @@ describe('UserModule (e2e)', () => {
     await app.init();
   });
 
-  it.todo('creatAccount');
+  afterAll(async () => {
+    // test 후 testDB를 삭제하기 위해 db와 연결 후 drop
+    await getConnection().dropDatabase();
+    app.close(); // for Jest did not exit one second after the test run has completed
+  });
+
+  it.todo('creatAccount'); // e2e test를 beforeAll에서 한번 db연결후 계속 이어서 하기 때문에
+  it.todo('verifyEmail'); // test 순서를 잘 고려해야 함
   it.todo('login');
   it.todo('me');
   it.todo('userProfile');
   it.todo('editProfile');
-  it.todo('verifyEmail');
 });

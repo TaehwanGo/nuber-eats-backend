@@ -24,8 +24,8 @@ describe('UserModule (e2e)', () => {
     app.close(); // for Jest did not exit one second after the test run has completed
   });
   // e2e test를 beforeAll에서 한번 db연결후 계속 이어서 하기 때문에 test 순서를 잘 고려해야 함
-  // it.todo('creatAccount');
-  describe('creatAccount', () => {
+  // it.todo('createAccount');
+  describe('createAccount', () => {
     const EMAIL = 'asdf@asdf.com';
     it('should create account', () => {
       // supertest를 이용해서 request를 보냄

@@ -55,10 +55,7 @@ import { MailModule } from './mail/mail.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
-      context: ({ req }) => {
-        console.log('GraphQLModule context start'); // query가 resolver에 들어오기 전까지 context는 실행이 안되기 때문에 middleware에서 생성한 user를 받을 수 있음
-        return { user: req['user'] };
-      }, // req:Request (JwtMiddleware)
+      context: ({ req }) => ({ user: req['user'] }), // req:Request (JwtMiddleware)
     }),
     // RestaurantsModule,
     UsersModule,

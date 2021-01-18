@@ -121,6 +121,7 @@ export class UsersService {
       if (email) {
         user.email = email;
         user.verified = false;
+        this.verifications.delete({ user: { id: user.id } });
         const verification = await this.verifications.save(
           this.verifications.create({ user }),
         );
@@ -136,6 +137,7 @@ export class UsersService {
         ok: true,
       };
     } catch (error) {
+      console.log(error);
       return { ok: false, error: 'Could not update profile' };
     }
   }

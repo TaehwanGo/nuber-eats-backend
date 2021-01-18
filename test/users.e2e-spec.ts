@@ -288,6 +288,86 @@ describe('UserModule (e2e)', () => {
     });
   });
 
+  // it.todo('editProfile');
+  describe('editProfile', () => {
+    const NEW_EMAIL = 'gth1123@naver.com';
+    it('should change email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `mutation {
+            editProfile(input: {
+              email: "${NEW_EMAIL}"
+            }){
+              ok
+              error
+            }
+          }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+      // .then(() => {
+      //   // me with login
+      //   return request(app.getHttpServer())
+      //     .post(GRAPHQL_ENDPOINT)
+      //     .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
+      //     .send({
+      //       query: `{
+      //   me {
+      //     id
+      //     email
+      //   }
+      // }`,
+      //     })
+      //     .expect(200)
+      //     .expect((res) => {
+      //       const {
+      //         body: {
+      //           data: {
+      //             me: { email },
+      //           },
+      //         },
+      //       } = res;
+      //       expect(email).toBe(NEW_EMAIL);
+      //     });
+    });
+    it('should have new email', () => {
+      // me with login
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
+        .send({
+          query: `{
+          me {
+            id
+            email
+          }
+        }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(NEW_EMAIL);
+        });
+    });
+  });
+
   it.todo('verifyEmail');
-  it.todo('editProfile');
 });

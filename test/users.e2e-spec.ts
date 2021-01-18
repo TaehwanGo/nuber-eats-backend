@@ -6,6 +6,13 @@ import { getConnection } from 'typeorm';
 
 const GRAPHQL_ENDPOINT = '/graphql';
 
+jest.mock('got', () => {
+  // email verification에서 사용되는 got의 post를 mock으로 대체함(메일을 보내지 않기 위해)
+  return {
+    post: jest.fn(),
+  };
+});
+
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
 
@@ -34,7 +41,7 @@ describe('UserModule (e2e)', () => {
         .send({
           query: `
         mutation {
-          creatAccount(input: {
+          createAccount(input: {
             email: "${EMAIL}",
             password: "789456",
             role: Client
@@ -51,10 +58,34 @@ describe('UserModule (e2e)', () => {
           expect(res.body.data.createAccount.error).toBe(null);
         });
     });
+
+    it('should fail if account already exists', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+        mutation {
+          createAccount(input: {
+            email: "${EMAIL}",
+            password: "789456",
+            role: Client
+          }) {
+            ok
+            error
+          }
+        }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          console.log(res.body);
+          expect(res.body.data.createAccount.ok).toBe(false);
+          expect(res.body.data.createAccount.error).toEqual(expect.any(String)); // toBe는 정확히 같아야 하기 때문에 toEqual을 사용
+        });
+    });
   });
-  it.todo('verifyEmail');
+  it.todo('userProfile');
   it.todo('login');
   it.todo('me');
-  it.todo('userProfile');
+  it.todo('verifyEmail');
   it.todo('editProfile');
 });

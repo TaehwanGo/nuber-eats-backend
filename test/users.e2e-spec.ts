@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 import { getConnection, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { response } from 'express';
 
 const GRAPHQL_ENDPOINT = '/graphql';
 // const EMAIL = 'asdf@asdf.com';
@@ -155,7 +156,7 @@ describe('UserModule (e2e)', () => {
           expect(login.ok).toBe(false);
           expect(login.error).toBe('Wrong password');
           expect(login.token).toBe(null);
-          console.log('jwtToken in login:', jwtToken);
+          // console.log('jwtToken in login:', jwtToken);
         });
     });
   });
@@ -170,7 +171,7 @@ describe('UserModule (e2e)', () => {
       const [user] = await usersRepository.find();
       userId = user.id;
       // console.log('user:', user);
-      console.log('jwtToken:', jwtToken);
+      // console.log('jwtToken:', jwtToken);
     });
     it("should see a user's profile", () => {
       return request(app.getHttpServer())
@@ -232,12 +233,61 @@ describe('UserModule (e2e)', () => {
             },
           } = res;
           expect(ok).toBe(false);
-          expect(error).toBe('User Not found');
+          expect(error).toBe('User Not Found');
           expect(user).toBe(null);
         });
     });
   });
-  it.todo('me');
+  // it.todo('me');
+  describe('me', () => {
+    // 로그인이 됐다면 작동하고 아니면 작동안하는 두가지 경우를 테스트해야함
+    it('should find my profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
+        .send({
+          query: `{
+          me {
+            id
+            email
+          }
+        }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(testUser.email);
+        });
+    });
+
+    it('should not allow logged out user', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `{
+          me {
+            id
+            email
+          }
+        }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: { errors },
+          } = res;
+          const [error] = errors;
+          expect(error.message).toBe('Forbidden resource');
+        });
+    });
+  });
+
   it.todo('verifyEmail');
   it.todo('editProfile');
 });

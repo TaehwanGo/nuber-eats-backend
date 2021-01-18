@@ -6,6 +6,7 @@ import { getConnection, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { response } from 'express';
+import { Verification } from 'src/users/entities/verification.entity';
 
 const GRAPHQL_ENDPOINT = '/graphql';
 // const EMAIL = 'asdf@asdf.com';
@@ -26,6 +27,7 @@ describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
   let usersRepository: Repository<User>;
+  let verificationsRepository: Repository<Verification>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,6 +36,9 @@ describe('UserModule (e2e)', () => {
 
     app = module.createNestApplication();
     usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    verificationsRepository = module.get<Repository<Verification>>(
+      getRepositoryToken(Verification),
+    );
     await app.init();
   });
 
@@ -369,5 +374,74 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('verifyEmail');
+  // it.todo('verifyEmail');
+  describe('verifyEmail', () => {
+    // verifyEmail은 email에 접근할 수 있는 권한을 요구함(token을 취득할 수 있는 권한) : 구현하지 않고 mock으로 대체
+    // userProfile에서 했던 거랑 비슷하게
+    let verificationCode: string;
+    beforeAll(async () => {
+      // 이렇게 하지않고
+      // 새 database를 만들면 verification이 하나 생기고 그 verification을 삭제해야 함
+      const [verification] = await verificationsRepository.find();
+      // console.log(verification);
+      verificationCode = verification.code;
+    });
+    it('should verify email', () => {
+      // verification을 하나 만들고 email을 변경할 때는 삭제한 다음에 새로 만듦
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+        mutation {
+          verifyEmail(input: { 
+            code: "${verificationCode}" 
+          }) {
+            ok
+            error
+          }
+        }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                verifyEmail: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+    });
+    it('should fail on verification code not found', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+        mutation {
+          verifyEmail(input: { 
+            code: "123123123" 
+          }) {
+            ok
+            error
+          }
+        }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                verifyEmail: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(false);
+          expect(error).toBe('Verification not found.');
+        });
+    });
+  });
 });

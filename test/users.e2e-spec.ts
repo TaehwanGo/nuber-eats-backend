@@ -71,7 +71,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           // console.log(res.body);
           expect(res.body.data.createAccount.ok).toBe(true);
           expect(res.body.data.createAccount.error).toBe(null);
@@ -91,7 +91,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           // console.log(res.body);
           const {
             body: {
@@ -121,7 +121,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: { login },
@@ -147,7 +147,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: { login },
@@ -183,7 +183,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -213,7 +213,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -238,7 +238,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -258,7 +258,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: { errors },
           } = res;
@@ -281,7 +281,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -326,7 +326,7 @@ describe('UserModule (e2e)', () => {
         }
       }`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -364,7 +364,7 @@ describe('UserModule (e2e)', () => {
       }
       `)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {
@@ -388,7 +388,7 @@ describe('UserModule (e2e)', () => {
       }
       `)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           const {
             body: {
               data: {

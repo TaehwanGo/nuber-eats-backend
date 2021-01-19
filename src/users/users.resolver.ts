@@ -14,23 +14,23 @@ import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verifty-email.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
-@Resolver((of) => User) // 여기에 function() : (of) => User은 왜 arg로 넣는거지? // of => User
+@Resolver(of => User) // 여기에 function() : (of) => User은 왜 arg로 넣는거지? // of => User
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Mutation((returns) => CreateAccountOutput) // createAccountOutput : create-account.dto
+  @Mutation(returns => CreateAccountOutput) // createAccountOutput : create-account.dto
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     return this.usersService.createAccount(createAccountInput);
   }
 
-  @Mutation((returns) => LoginOutput)
+  @Mutation(returns => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     return this.usersService.login(loginInput);
   }
 
-  @Query((returns) => User)
+  @Query(returns => User)
   @UseGuards(AuthGuard) // 오.. ! 이렇게 가드를 추가해서 조건에 따라 진행되는 것을 막을 수 있구나
   me(@AuthUser() authUser: User) {
     // console.log(authUser);
@@ -38,7 +38,7 @@ export class UsersResolver {
   }
 
   @UseGuards(AuthGuard) // protected end point : guard를 사용하겠다는 말
-  @Query((returns) => UserProfileOutput)
+  @Query(returns => UserProfileOutput)
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
@@ -46,7 +46,7 @@ export class UsersResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation((returns) => EditProfileOutput)
+  @Mutation(returns => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,
     @Args('input') editProfileInput: EditProfileInput,
@@ -54,7 +54,7 @@ export class UsersResolver {
     return this.usersService.editProfile(authUser.id, editProfileInput);
   }
 
-  @Mutation((returns) => VerifyEmailOutput)
+  @Mutation(returns => VerifyEmailOutput)
   verifyEmail(
     @Args('input') { code }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {

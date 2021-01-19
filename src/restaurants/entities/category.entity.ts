@@ -1,13 +1,13 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
-import { Category } from './category.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Restaurant } from './restaurant.entitiy';
 
 // @InputType({isAbstract: true}) // isAbstract: true는 InputType이 스키마에 포함되지 않는 다는 뜻 : 직접 사용하는 게 아닌 확장시킨다는 말(이해 못 함)
 @ObjectType()
 @Entity()
-export class Restaurant extends CoreEntity {
+export class Category extends CoreEntity {
   @Field(type => String)
   @Column()
   @IsString()
@@ -18,12 +18,7 @@ export class Restaurant extends CoreEntity {
   @IsString()
   coverImage: string;
 
-  @Field(type => String, { defaultValue: '강남' })
-  @Column()
-  @IsString()
-  address: string;
-
-  @ManyToOne(type => Category, category => category.restaurants)
-  @Field(type => Category)
-  category: Category;
+  @OneToMany(type => Restaurant, restaurant => restaurant.category) // 어떤 entity에 적용되는 것인지 알려주는 것 : type => Restaurant
+  @Field(type => [Restaurant])
+  restaurants: Restaurant[];
 }

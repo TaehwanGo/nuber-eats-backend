@@ -29,6 +29,13 @@ describe('UserModule (e2e)', () => {
   let usersRepository: Repository<User>;
   let verificationsRepository: Repository<Verification>;
 
+  const baseTest = () => request(app.getHttpServer()).post(GRAPHQL_ENDPOINT);
+  const publicTest = (query: string) => baseTest().send({ query });
+  const privateTest = (query: string) =>
+    baseTest() //
+      .set('X-JWT', jwtToken)
+      .send({ query });
+
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule], // users e2e test 이지만 전체 app을 import해야 테스트가 가능
@@ -42,9 +49,6 @@ describe('UserModule (e2e)', () => {
     await app.init();
   });
 
-  const sendGraphqlQuery = (query: string) =>
-    request(app.getHttpServer()).post(GRAPHQL_ENDPOINT).send({ query });
-
   afterAll(async () => {
     // test 후 testDB를 삭제하기 위해 db와 연결 후 drop
     await getConnection().dropDatabase();
@@ -55,21 +59,17 @@ describe('UserModule (e2e)', () => {
   describe('createAccount', () => {
     it('should create account', () => {
       // supertest를 이용해서 request를 보냄
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          createAccount(input: {
-            email: "${testUser.email}",
-            password: "${testUser.password}",
-            role: Client
-          }) {
-            ok
-            error
-          }
-        }`,
-        })
+      return publicTest(`
+      mutation {
+        createAccount(input: {
+          email: "${testUser.email}",
+          password: "${testUser.password}",
+          role: Client
+        }) {
+          ok
+          error
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           // console.log(res.body);
@@ -79,26 +79,29 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should fail if account already exists', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          createAccount(input: {
-            email: "${testUser.email}",
-            password: "${testUser.password}",
-            role: Client
-          }) {
-            ok
-            error
-          }
-        }`,
-        })
+      return publicTest(`
+      mutation {
+        createAccount(input: {
+          email: "${testUser.email}",
+          password: "${testUser.password}",
+          role: Client
+        }) {
+          ok
+          error
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           // console.log(res.body);
-          expect(res.body.data.createAccount.ok).toBe(false);
-          expect(res.body.data.createAccount.error).toEqual(expect.any(String)); // toBe는 정확히 같아야 하기 때문에 toEqual을 사용
+          const {
+            body: {
+              data: {
+                createAccount: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(false);
+          expect(error).toBe('There is a user with that email already'); // toBe는 정확히 같아야 하기 때문에 toEqual을 사용
         });
     });
   });
@@ -106,21 +109,17 @@ describe('UserModule (e2e)', () => {
   describe('login', () => {
     it('should login with correct credentials', () => {
       // jwt token을 받아오는 것
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          login(input: {
-            email: "${testUser.email}",
-            password: "${testUser.password}",
-          }) {
-            ok
-            error
-            token
-          }
-        }`,
-        })
+      return publicTest(`
+      mutation {
+        login(input: {
+          email: "${testUser.email}",
+          password: "${testUser.password}",
+        }) {
+          ok
+          error
+          token
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -136,21 +135,17 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should not be able to login with wrong credentials', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          login(input: {
-            email: "${testUser.email}",
-            password: "xxx",
-          }) {
-            ok
-            error
-            token
-          }
-        }`,
-        })
+      return publicTest(`
+      mutation {
+        login(input: {
+          email: "${testUser.email}",
+          password: "xxx",
+        }) {
+          ok
+          error
+          token
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -161,7 +156,6 @@ describe('UserModule (e2e)', () => {
           expect(login.ok).toBe(false);
           expect(login.error).toBe('Wrong password');
           expect(login.token).toBe(null);
-          // console.log('jwtToken in login:', jwtToken);
         });
     });
   });
@@ -179,20 +173,15 @@ describe('UserModule (e2e)', () => {
       // console.log('jwtToken:', jwtToken);
     });
     it("should see a user's profile", () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
-        .send({
-          query: `{
-          userProfile(userId:${userId}){
-            ok
-            error
-            user{
-              id
-            }
+      return privateTest(`{
+        userProfile(userId:${userId}){
+          ok
+          error
+          user{
+            id
           }
-        }`,
-        })
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -214,20 +203,15 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should not find a profile', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
-        .send({
-          query: `{
-          userProfile(userId:123){
-            ok
-            error
-            user{
-              id
-            }
+      return privateTest(`{
+        userProfile(userId:123){
+          ok
+          error
+          user{
+            id
           }
-        }`,
-        })
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -247,17 +231,12 @@ describe('UserModule (e2e)', () => {
   describe('me', () => {
     // 로그인이 됐다면 작동하고 아니면 작동안하는 두가지 경우를 테스트해야함
     it('should find my profile', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
-        .send({
-          query: `{
-          me {
-            id
-            email
-          }
-        }`,
-        })
+      return privateTest(`{
+        me {
+          id
+          email
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -272,16 +251,12 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should not allow logged out user', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `{
-          me {
-            id
-            email
-          }
-        }`,
-        })
+      return publicTest(`{
+        me {
+          id
+          email
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -297,19 +272,14 @@ describe('UserModule (e2e)', () => {
   describe('editProfile', () => {
     const NEW_EMAIL = 'gth1123@naver.com';
     it('should change email', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', jwtToken)
-        .send({
-          query: `mutation {
-            editProfile(input: {
-              email: "${NEW_EMAIL}"
-            }){
-              ok
-              error
-            }
-          }`,
-        })
+      return privateTest(`mutation {
+        editProfile(input: {
+          email: "${NEW_EMAIL}"
+        }){
+          ok
+          error
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -322,7 +292,7 @@ describe('UserModule (e2e)', () => {
           expect(ok).toBe(true);
           expect(error).toBe(null);
         });
-      // .then(() => {
+      // .then(() => { // it('should have new email') 로 따로 분리
       //   // me with login
       //   return request(app.getHttpServer())
       //     .post(GRAPHQL_ENDPOINT)
@@ -349,17 +319,12 @@ describe('UserModule (e2e)', () => {
     });
     it('should have new email', () => {
       // me with login
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .set('X-JWT', jwtToken) // superTest를 사용해서 header를 set하는 방법(POST다음에 set()을 사용해야함)
-        .send({
-          query: `{
-          me {
-            id
-            email
-          }
-        }`,
-        })
+      return privateTest(`{
+        me {
+          id
+          email
+        }
+      }`)
         .expect(200)
         .expect((res) => {
           const {
@@ -388,20 +353,16 @@ describe('UserModule (e2e)', () => {
     });
     it('should verify email', () => {
       // verification을 하나 만들고 email을 변경할 때는 삭제한 다음에 새로 만듦
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          verifyEmail(input: { 
-            code: "${verificationCode}" 
-          }) {
-            ok
-            error
-          }
+      return publicTest(`
+      mutation {
+        verifyEmail(input: { 
+          code: "${verificationCode}" 
+        }) {
+          ok
+          error
         }
-        `,
-        })
+      }
+      `)
         .expect(200)
         .expect((res) => {
           const {
@@ -416,20 +377,16 @@ describe('UserModule (e2e)', () => {
         });
     });
     it('should fail on verification code not found', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
-        mutation {
-          verifyEmail(input: { 
-            code: "123123123" 
-          }) {
-            ok
-            error
-          }
+      return publicTest(`
+      mutation {
+        verifyEmail(input: { 
+          code: "123123123" 
+        }) {
+          ok
+          error
         }
-        `,
-        })
+      }
+      `)
         .expect(200)
         .expect((res) => {
           const {

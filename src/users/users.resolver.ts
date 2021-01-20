@@ -33,7 +33,7 @@ export class UsersResolver {
 
   @Query(returns => User)
   // @UseGuards(AuthGuard) // 오.. ! 이렇게 가드를 추가해서 조건에 따라 진행되는 것을 막을 수 있구나
-  @Role(['Any'])
+  @Role(['Any']) // 로그인 상태인 모든 유저
   me(@AuthUser() authUser: User) {
     // console.log(authUser);
     return authUser;

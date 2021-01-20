@@ -29,6 +29,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    return roles.includes(user.role);
+    return roles.includes(user.role); // @Role(['Owner'])에서 ['Owner']가 현재 로그인된 user의 role을 포함하고 있는지 확인
   }
 }

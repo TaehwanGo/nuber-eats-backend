@@ -5,7 +5,7 @@ import { AuthGuard } from './auth.guard';
 @Module({
   providers: [
     {
-      provide: APP_GUARD,
+      provide: APP_GUARD, // 모든 곳에 적용
       useClass: AuthGuard,
     },
   ],

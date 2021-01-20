@@ -29,3 +29,17 @@ The Backend of Nuber Eats Clone
 - category // foreign key
 - address
 - coverImage
+
+## Plan
+
+- Edit Restaurant : Owner는 edit, delete이 가능 - role based authentication을 이용
+- Delete Restaurant
+
+- See Categories
+- See Restaurants by Category (pagination) : category 클릭하면 restaurants를 볼 수 있음
+- See Restaurants (pagination)
+- See Restaurant
+
+- Create Dish
+- Edit Dish
+- Delete Dish

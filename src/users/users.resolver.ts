@@ -3,6 +3,7 @@ import { UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql'; // graphql에서 import 해야 됨
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { Role } from 'src/auth/role.decorator';
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -31,13 +32,15 @@ export class UsersResolver {
   }
 
   @Query(returns => User)
-  @UseGuards(AuthGuard) // 오.. ! 이렇게 가드를 추가해서 조건에 따라 진행되는 것을 막을 수 있구나
+  // @UseGuards(AuthGuard) // 오.. ! 이렇게 가드를 추가해서 조건에 따라 진행되는 것을 막을 수 있구나
+  @Role(['Any'])
   me(@AuthUser() authUser: User) {
     // console.log(authUser);
     return authUser;
   }
 
-  @UseGuards(AuthGuard) // protected end point : guard를 사용하겠다는 말
+  // @UseGuards(AuthGuard) // protected end point : guard를 사용하겠다는 말
+  @Role(['Any'])
   @Query(returns => UserProfileOutput)
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
@@ -45,7 +48,8 @@ export class UsersResolver {
     return this.usersService.findById(userProfileInput.userId);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
+  @Role(['Any'])
   @Mutation(returns => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,

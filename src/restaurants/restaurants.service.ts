@@ -7,6 +7,10 @@ import {
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
 import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dtos/delete-restaurant.dto';
+import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
@@ -49,17 +53,17 @@ export class RestaurantService {
 
   async editRestaurant(
     owner: User,
-    editRestaurantInput: EditRestaurantInput,
+    editRestaurantInput: EditRestaurantInput, // 여기에서 { name, address, ... } 같이 하지 않은 이유는 없는 항목은 undefined가 되는데 아래에 ...에서 undefined까지 업데이트 하므로
   ): Promise<EditRestaurantOutput> {
     try {
       const restaurant = await this.restaurants.findOne(
         editRestaurantInput.restaurantId,
-        { loadRelationIds: true }, // { relations: ['owner'], } 이런식으로 owner정보를 모두 가져올 수 있음
+        // { loadRelationIds: true }, // { relations: ['owner'], } 이런식으로 owner정보를 모두 가져올 수 있음
       );
       if (!restaurant) {
         return {
           ok: false,
-          error: 'Restaurnat not found',
+          error: 'Restaurant not found',
         };
       }
       if (owner.id !== restaurant.ownerId) {
@@ -88,6 +92,37 @@ export class RestaurantService {
     } catch (error) {
       console.log(error);
       return { ok: false, error: 'Could not edit restaurant' };
+    }
+  }
+
+  async deleteRestaurant(
+    owner: User,
+    { restaurantId }: DeleteRestaurantInput,
+  ): Promise<DeleteRestaurantOutput> {
+    try {
+      // 여기서 부터
+      const restaurant = await this.restaurants.findOne(restaurantId);
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      if (owner.id !== restaurant.ownerId) {
+        // 수정하려는 사람(owner)가 그 수정하려는 restaurant를 가지고 있는지 확인 해야 함
+        return {
+          ok: false,
+          error: "You can't delete a restaurant that you don't own",
+        };
+      }
+      // 여기까지 check하는 함수로 만들기 code challenge : checking if the person is the owner of the restaurant
+
+      await this.restaurants.delete(restaurantId);
+    } catch (err) {
+      return {
+        ok: false,
+        error: 'Could not delete restaurant',
+      };
     }
   }
 }

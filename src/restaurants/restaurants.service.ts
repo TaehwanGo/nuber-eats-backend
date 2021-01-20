@@ -43,7 +43,7 @@ export class RestaurantService {
       const newRestaurant = this.restaurants.create(createRestaurantInput); // entity에 dto를 하나하나 씩 넣을 필요 없이 이렇게 해결 // 하지만 단지 typescript상에만 존재하는 클래스를 만든 것
       newRestaurant.owner = owner; // dto에서 owner는 graphql에서 받아오지 않기 때문에 여기서 완성시켜 줘야함
 
-      const category = this.getOrCreateCategory(
+      const category = await this.getOrCreateCategory(
         createRestaurantInput.categoryName,
       );
 

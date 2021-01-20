@@ -23,19 +23,6 @@ export class RestaurantService {
     private readonly categories: CategoryRepository, // Repository<Category> 를 상속받아서 만든 custom repository
   ) {} // 우리 Repository를 inject
 
-  async getOrCreate(name: string): Promise<Category> {
-    const categoryName = name.trim().toLowerCase().replace(/ +/g, ' '); // 정규식 공부 필요 !
-    // trim() : 앞, 뒤 space를 지워줌
-    const categorySlug = categoryName.replace(/ /g, '-'); // '/ /g':regular expression
-    let category = await this.categories.findOne({ slug: categorySlug });
-    if (!category) {
-      category = await this.categories.save(
-        this.categories.create({ slug: categorySlug, name: categoryName }),
-      );
-    }
-    return category;
-  }
-
   async createRestaurant(
     owner: User,
     createRestaurantInput: CreateRestaurantInput,

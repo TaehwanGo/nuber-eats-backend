@@ -78,7 +78,7 @@ export class CategoryResolver {
     // return type을 Promise로 한것만으로도 브라우저가 알아서 기다림
     // @Parent() : this will give you currently being processed
     console.log('category:', category);
-    return this.restaurantService.countRestaurant(category);
+    return this.restaurantService.countRestaurants(category);
   }
 
   @Query(type => AllCategoriesOutput)
@@ -87,7 +87,9 @@ export class CategoryResolver {
   }
 
   @Query(type => CategoryOutput)
-  category(@Args() categoryInput: CategoryInput): Promise<CategoryOutput> {
+  category(
+    @Args('input') categoryInput: CategoryInput,
+  ): Promise<CategoryOutput> {
     return this.restaurantService.findCategoryBySlug(categoryInput);
   }
 }

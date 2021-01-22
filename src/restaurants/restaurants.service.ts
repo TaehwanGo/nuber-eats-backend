@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { Like, Raw, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
@@ -243,8 +243,9 @@ export class RestaurantService {
     page,
   }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
     try {
+      // custom repository를 만들고 그 안에 pagination함수를 구현: homework
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        where: { name: Like(`%${query}%`) }, // sql : name column에서 query가 포함된 것을 찾음(restaurant table에서)
+        where: { name: Raw(name => `${name} ILike '%${query}%'`) }, // sql : name column에서 query가 포함된 것을 찾음(restaurant table에서) // ILike : insensitive(대소문자 구분없이 찾음)
         skip: (page - 1) * 25,
         take: 25,
       });

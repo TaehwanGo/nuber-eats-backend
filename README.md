@@ -43,3 +43,8 @@ The Backend of Nuber Eats Clone
 - Create Dish
 - Edit Dish
 - Delete Dish
+
+- Orders CRUD
+- Orders Subscription (for Owner, Customer, Delivery)
+
+- Payments(using paddle) - CRON jobs : 특정 작업을 정해진 시간에 하는 것

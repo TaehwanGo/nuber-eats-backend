@@ -22,6 +22,7 @@ import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
 import { Restaurant } from './restaurants/entities/restaurant.entitiy';
 import { Category } from './restaurants/entities/category.entity';
+import { Dish } from './restaurants/entities/dish.endtity';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { Category } from './restaurants/entities/category.entity';
       synchronize: process.env.NODE_ENV !== 'prod', // TypeORM이 데이터베이스에 연결할 때 DB를 나의 모듈의 현재 상태로 마이그레이션 한다는 뜻
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Verification, Restaurant, Category], // **1. entities: [Restaurant] 이것 덕분에 Restaurant가 DB가 되는 것
+      entities: [User, Verification, Restaurant, Category, Dish], // **1. entities: [Restaurant] 이것 덕분에 Restaurant가 DB가 되는 것
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')

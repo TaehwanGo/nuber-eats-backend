@@ -1,8 +1,17 @@
-import { SetMetadata } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User, UserRole } from 'src/users/entities/user.entity';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
+import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -15,6 +24,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurant.entitiy';
 import { RestaurantService } from './restaurants.service';
 
@@ -54,5 +64,30 @@ export class RestaurantsResolver {
       owner,
       deleteRestaurantInput,
     );
+  }
+}
+
+@Resolver(of => Category)
+export class CategoryResolver {
+  // categoryService를 만들지 않는 이유는 작기 때문에 만약 서비스가 필요하다면 모듈을 따로 분리함
+  constructor(private readonly restaurantService: RestaurantService) {}
+
+  @ResolveField(type => Int) // Parent(Category)의 field임(Resolver(of => Category))
+  // dynamic field, 매 request마다 계산된 field를 만들어줌
+  restaurantCount(@Parent() category: Category): Promise<number> {
+    // return type을 Promise로 한것만으로도 브라우저가 알아서 기다림
+    // @Parent() : this will give you currently being processed
+    console.log('category:', category);
+    return this.restaurantService.countRestaurant(category);
+  }
+
+  @Query(type => AllCategoriesOutput)
+  allCategories(): Promise<AllCategoriesOutput> {
+    return this.restaurantService.allCategories();
+  }
+
+  @Query(type => CategoryOutput)
+  category(@Args() categoryInput: CategoryInput): Promise<CategoryOutput> {
+    return this.restaurantService.findCategoryBySlug(categoryInput);
   }
 }

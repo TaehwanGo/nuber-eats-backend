@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
@@ -16,7 +16,12 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dtos/search-restaurant.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurant.entitiy';
 import { CategoryRepository } from './repositories/category.repository';
@@ -198,7 +203,7 @@ export class RestaurantService {
       });
       return {
         ok: true,
-        results: restaurants,
+        restaurants,
         totalPages: Math.ceil(totalResults / 25),
         totalResults,
       };
@@ -206,6 +211,54 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not load restaurants',
+      };
+    }
+  }
+
+  async findRestaurantById({
+    restaurantId,
+  }: RestaurantInput): Promise<RestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(restaurantId);
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Could not find restaurant by id',
+        };
+      }
+      return {
+        ok: true,
+        restaurant,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: 'Could not find restaurant',
+      };
+    }
+  }
+
+  async searchRestaurantByName({
+    query,
+    page,
+  }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        where: { name: Like(`%${query}%`) }, // sql : name column에서 query가 포함된 것을 찾음(restaurant table에서)
+        skip: (page - 1) * 25,
+        take: 25,
+      });
+
+      return {
+        ok: true,
+        totalResults,
+        restaurants,
+        totalPages: Math.ceil(totalResults / 25),
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: 'Could not search restaurant',
       };
     }
   }

@@ -1,4 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 import {
   PaginationInput,
   PaginationOutput,
@@ -6,10 +7,13 @@ import {
 import { Restaurant } from '../entities/restaurant.entitiy';
 
 @InputType()
-export class RestaurantsInput extends PaginationInput {}
+export class SearchRestaurantInput extends PaginationInput {
+  @Field(type => String)
+  query: string;
+}
 
 @ObjectType()
-export class RestaurantsOutput extends PaginationOutput {
+export class SearchRestaurantOutput extends PaginationOutput {
   @Field(type => [Restaurant], { nullable: true })
   restaurants?: Restaurant[];
 }

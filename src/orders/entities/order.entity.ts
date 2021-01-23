@@ -5,7 +5,7 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Dish } from 'src/restaurants/entities/dish.endtity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
@@ -19,6 +19,7 @@ import {
   OneToMany,
   RelationId,
 } from 'typeorm';
+import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
   Pending = 'Pending',
@@ -59,16 +60,18 @@ export class Order extends CoreEntity {
   })
   restaurant: Restaurant;
 
-  @Field(type => [Dish])
-  @ManyToMany(type => Dish)
+  @Field(type => [OrderItem])
+  @ManyToMany(type => OrderItem)
   @JoinTable() // dish쪽에선 어떤 사람이 주문했는지 알 수 없지만 order쪽에선 알 수 있으므로 order : dish의 ManyToMany relation의 주도권은 order가 가져감
-  dishes: Dish[];
+  items: OrderItem[]; // dishOption이 없으면 그냥 Dish[]로 저장해도 되지만 dishOption은 반드시 필요함 -> 따로 분리 : order-item.entity (Dish[] 대신)
 
   @Field(type => Float, { nullable: true })
   @Column({ nullable: true })
+  @IsNumber()
   total?: number;
 
   @Field(type => OrderStatus)
   @Column({ type: 'enum', enum: OrderStatus })
+  @IsEnum(OrderStatus)
   status: OrderStatus;
 }

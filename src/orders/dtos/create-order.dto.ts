@@ -4,7 +4,7 @@ import { Dish } from 'src/restaurants/entities/dish.endtity';
 import { Order } from '../entities/order.entity';
 
 @InputType()
-export class CreateOrderInput extends PickType(Order, ['dishes']) {
+export class CreateOrderInput extends PickType(Order, ['items']) {
   // order를 만들때 dish의 모든 정보는 필요 없음 - name, price만 필요 : 이 다음 commit에서 확인
   @Field(type => Int)
   restaurantId: number;

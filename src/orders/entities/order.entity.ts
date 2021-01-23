@@ -45,12 +45,17 @@ export class Order extends CoreEntity {
   })
   customer?: User;
 
+  @RelationId((order: Order) => order.customer)
+  customerId: number;
+
   @Field(type => User, { nullable: true })
   @ManyToOne(type => User, user => user.rides, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   driver?: User; // 주문을 넣을땐 아직 driver가 배정되지 않았기 때문에 nullable: true
+  @RelationId((order: Order) => order.driver)
+  driverId: number;
 
   @Field(type => Restaurant, { nullable: true })
   @ManyToOne(type => Restaurant, restaurant => restaurant.orders, {

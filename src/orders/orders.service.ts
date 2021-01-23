@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dish } from 'src/restaurants/entities/dish.endtity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
-import { User } from 'src/users/entities/user.entity';
+import { User, UserRole } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
+import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
+import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { OrderItem } from './entities/order-item.entity';
 import { Order } from './entities/order.entity';
 
@@ -98,6 +100,99 @@ export class OrdersService {
       return {
         ok: false,
         error: 'Could not create order.',
+      };
+    }
+  }
+
+  async getOrders(
+    user: User,
+    { status }: GetOrdersInput,
+  ): Promise<GetOrdersOutput> {
+    // user가 customer라면 주문한 모든 order를 보여줌
+    // delivery man이라면 등록된 주문을 검색해서 보여줌, 음식점도 마찬가지
+    try {
+      let orders: Order[];
+      if (user.role === UserRole.Client) {
+        orders = await this.orders.find({
+          where: {
+            customer: user,
+            ...(status && { status }), // status가 undefined이면 TypeORM은 아무것도 안 가져옴
+          },
+        });
+      } else if (user.role === UserRole.Delivery) {
+        orders = await this.orders.find({
+          where: {
+            driver: user,
+            ...(status && { status }),
+          },
+        });
+      } else if (user.role === UserRole.Owner) {
+        const restaurants = await this.restaurants.find({
+          where: {
+            owner: user,
+          },
+          relations: ['orders'],
+        });
+        //   console.log(restaurants); // [restaurant1[order1, order2], restaurant2[order1, order2]] : 우리가 1 owner가 여러개 restaurants를 갖도록 허락했기 때문에
+        orders = restaurants.map(restaurant => restaurant.orders).flat(1); // flat(1) 한껍질 벗김 내부에서 외부로 : [],[] 같은 빈 array들을 제거 하기 위해
+        // console.log(orders);
+        if (status) {
+          orders = orders.filter(order => order.status === status); // array.filter는 조건을 만족시키지 못하는 요소를 제거 함
+        }
+      }
+      return {
+        ok: true,
+        orders,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: 'Could not get orders.',
+      };
+    }
+  }
+
+  async getOrder(
+    user: User,
+    { id: orderId }: GetOrderInput,
+  ): Promise<GetOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId, {
+        relations: ['restaurant'],
+      });
+      if (!order) {
+        return {
+          ok: false,
+          error: 'Order not found.',
+        };
+      }
+      let canSee = true;
+      if (user.role === UserRole.Client && order.customerId !== user.id) {
+        canSee = false;
+      }
+      if (user.role === UserRole.Delivery && order.driverId !== user.id) {
+        canSee = false;
+      }
+      if (
+        user.role === UserRole.Owner &&
+        order.restaurant.ownerId !== user.id
+      ) {
+        canSee = false;
+      }
+      if (!canSee) {
+        return {
+          ok: false,
+          error: "You can't see that",
+        };
+      }
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not get the order',
       };
     }
   }

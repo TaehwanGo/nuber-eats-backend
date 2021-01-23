@@ -64,9 +64,9 @@ export class Order extends CoreEntity {
   @JoinTable() // dish쪽에선 어떤 사람이 주문했는지 알 수 없지만 order쪽에선 알 수 있으므로 order : dish의 ManyToMany relation의 주도권은 order가 가져감
   dishes: Dish[];
 
-  @Field(type => Float)
-  @Column()
-  total: number;
+  @Field(type => Float, { nullable: true })
+  @Column({ nullable: true })
+  total?: number;
 
   @Field(type => OrderStatus)
   @Column({ type: 'enum', enum: OrderStatus })

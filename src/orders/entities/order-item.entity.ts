@@ -1,24 +1,25 @@
-import {
-  Field,
-  Float,
-  InputType,
-  ObjectType,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Dish, DishOption } from 'src/restaurants/entities/dish.endtity';
+import {
+  Dish,
+  DishChoice,
+  DishOption,
+} from 'src/restaurants/entities/dish.endtity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
 import { User } from 'src/users/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  RelationId,
-} from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
+
+@InputType('OrderItemOptionInputType', { isAbstract: true })
+@ObjectType()
+export class OrderItemOption {
+  @Field(type => String)
+  name: string;
+  @Field(type => String, { nullable: true })
+  choice?: string;
+  @Field(type => Int, { nullable: true })
+  extra?: number;
+}
 
 @InputType('OrderItemInputType', { isAbstract: true }) // isAbstract: true는 InputType이 스키마에 포함되지 않는 다는 뜻 : 직접 사용하는 게 아닌 확장시킨다는 말(이해 못 함)
 @ObjectType()
@@ -32,6 +33,6 @@ export class OrderItem extends CoreEntity {
   dish: Dish;
 
   @Field(type => [DishOption], { nullable: true })
-  @Column({ type: 'json', nullable: true }) // OneToMany & ManyToOne 대신 사용
-  options?: DishOption[]; // menu의 option이 삭제되거나 변경되면 이전 주문에 영향을 줌 => 그래서 json으로 option은 order가 생성되고 완료될때까지 한번만 저장됨 - owner가 음식의 옵션을 수정해도 문제가 없음
+  @Column({ type: 'json', nullable: true }) // json : OneToMany & ManyToOne 대신 사용
+  options?: OrderItemOption[];
 }

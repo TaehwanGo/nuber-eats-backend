@@ -52,13 +52,13 @@ export class Order extends CoreEntity {
   })
   driver?: User; // 주문을 넣을땐 아직 driver가 배정되지 않았기 때문에 nullable: true
 
-  @Field(type => Restaurant)
+  @Field(type => Restaurant, { nullable: true })
   @ManyToOne(type => Restaurant, restaurant => restaurant.orders, {
     // user가 많은 orders를 가졌던 것 처럼 restaurant도 orders를 가짐
     onDelete: 'SET NULL',
     nullable: true,
   })
-  restaurant: Restaurant;
+  restaurant?: Restaurant;
 
   @Field(type => [OrderItem])
   @ManyToMany(type => OrderItem)
@@ -71,7 +71,7 @@ export class Order extends CoreEntity {
   total?: number;
 
   @Field(type => OrderStatus)
-  @Column({ type: 'enum', enum: OrderStatus })
+  @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.Pending })
   @IsEnum(OrderStatus)
   status: OrderStatus;
 }

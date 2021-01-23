@@ -1,8 +1,19 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsNumber, IsString, Length } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
 import { Restaurant } from './restaurant.entitiy';
+
+@InputType('DishOptionInputType', { isAbstract: true })
+@ObjectType()
+class DishOption {
+  @Field(type => String)
+  name: string;
+  @Field(type => [String], { nullable: true })
+  choices?: string[];
+  @Field(type => Int, { nullable: true })
+  extra?: number;
+}
 
 @InputType('DishInputType', { isAbstract: true }) // isAbstract: true는 InputType이 스키마에 포함되지 않는 다는 뜻 : 직접 사용하는 게 아닌 확장시킨다는 말(이해 못 함)
 @ObjectType()
@@ -16,7 +27,8 @@ export class Dish extends CoreEntity {
   @Field(type => String, { nullable: true })
   @Column({ nullable: true })
   @IsString()
-  photo: string;
+  @IsOptional()
+  photo?: string;
 
   @Field(type => Int)
   @Column()
@@ -31,9 +43,14 @@ export class Dish extends CoreEntity {
   @Field(type => Restaurant)
   @ManyToOne(type => Restaurant, restaurant => restaurant.menu, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
   restaurant: Restaurant;
 
   @RelationId((dish: Dish) => dish.restaurant)
   restaurantId: number;
+
+  @Field(type => [DishOption], { nullable: true })
+  @Column({ type: 'json', nullable: true }) // OneToMany & ManyToOne 대신 사용
+  options?: DishOption[];
 }

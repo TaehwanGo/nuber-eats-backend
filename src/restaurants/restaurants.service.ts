@@ -4,6 +4,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Like, Raw, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -23,6 +24,7 @@ import {
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
 import { Category } from './entities/category.entity';
+import { Dish } from './entities/dish.endtity';
 import { Restaurant } from './entities/restaurant.entitiy';
 import { CategoryRepository } from './repositories/category.repository';
 
@@ -33,6 +35,8 @@ export class RestaurantService {
     private readonly restaurants: Repository<Restaurant>, // **4. Repository class를 사용해서 DB에 접근(Data mapper 방식)
     // @InjectRepository(Category)
     private readonly categories: CategoryRepository, // Repository<Category> 를 상속받아서 만든 custom repository
+    @InjectRepository(Dish)
+    private readonly dishes: Repository<Dish>,
   ) {} // 우리 Repository를 inject
 
   async createRestaurant(
@@ -219,7 +223,9 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne(restaurantId);
+      const restaurant = await this.restaurants.findOne(restaurantId, {
+        relations: ['menu'],
+      });
       if (!restaurant) {
         return {
           ok: false,
@@ -260,6 +266,48 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not search restaurant',
+      };
+    }
+  }
+
+  async createDish(
+    owner: User,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    try {
+      // 1. find restaurant
+      const restaurant = await this.restaurants.findOne(
+        createDishInput.restaurantId,
+      );
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      // 2. check owner and owner of the restaurant are the same
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          error: "You can't create dish on the restaurant you don't own.",
+        };
+      }
+      // 3. create dish and add to the restaurant
+      const dish = await this.dishes.save(
+        this.dishes.create({
+          ...createDishInput,
+          restaurant,
+        }),
+      );
+      console.log(dish);
+      return {
+        ok: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        ok: false,
+        error: 'Could not create dish',
       };
     }
   }

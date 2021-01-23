@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
+import { Order } from 'src/orders/entities/order.entity';
 
 // type UserRole = 'client' | 'owner' | 'deliver';
 export enum UserRole {
@@ -44,9 +45,17 @@ export class User extends CoreEntity {
   @IsBoolean()
   verified: boolean;
 
-  @OneToMany(type => Restaurant, restaurant => restaurant.owner) // 어떤 entity에 적용되는 것인지 알려주는 것 : type => Restaurant
   @Field(type => [Restaurant])
+  @OneToMany(type => Restaurant, restaurant => restaurant.owner)
   restaurants: Restaurant[];
+
+  @Field(type => [Order])
+  @OneToMany(type => Order, order => order.customer)
+  orders: Order[]; // for customer
+
+  @Field(type => [Order])
+  @OneToMany(type => Order, order => order.driver)
+  rides: Order[]; // for driver
 
   @BeforeInsert()
   @BeforeUpdate() // 왜 BeforeUpdate()가 실행되지 않을까? 저장할 때 Repository.update() -> save()로 변경

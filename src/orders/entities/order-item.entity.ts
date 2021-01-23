@@ -17,8 +17,6 @@ export class OrderItemOption {
   name: string;
   @Field(type => String, { nullable: true })
   choice?: string;
-  @Field(type => Int, { nullable: true })
-  extra?: number;
 }
 
 @InputType('OrderItemInputType', { isAbstract: true }) // isAbstract: true는 InputType이 스키마에 포함되지 않는 다는 뜻 : 직접 사용하는 게 아닌 확장시킨다는 말(이해 못 함)

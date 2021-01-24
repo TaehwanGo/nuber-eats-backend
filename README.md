@@ -45,6 +45,6 @@ The Backend of Nuber Eats Clone
 - Delete Dish
 
 - Orders CRUD
-- Orders Subscription (for Owner, Customer, Delivery)
+- Orders Subscription (for Owner, Customer, Delivery) : subscription은 resolver에서 변경사항이나 업데이트를 listen
 
 - Payments(using paddle) - CRON jobs : 특정 작업을 정해진 시간에 하는 것

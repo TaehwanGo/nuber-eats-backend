@@ -67,8 +67,11 @@ export class OrdersResolver {
   // context: graphql의 context
   @Subscription(returns => String, {
     filter: ({ readyPotatos }, { potatoId }) => {
-      return readyPotatos === potatoId;
+      return readyPotatos === potatoId; // filter가 true일때만 update함
     },
+    resolve: (
+      { readyPotatos }, // payload를 변형해서 응답값으로 출력할 수 있음
+    ) => `Your potato with the id ${readyPotatos} is ready!`, // return값은 @Subscription의 returns값 : returns => String
   })
   @Role(['Any'])
   readyPotatos(@Args('potatoId') potatoId: number) {

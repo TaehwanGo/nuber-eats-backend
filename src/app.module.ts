@@ -1,17 +1,9 @@
-import {
-  Global,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import * as Joi from 'joi'; // typescript에서 javascript 패키지를 import하는 방법
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-// import { join } from 'path';
 import { RestaurantsModule } from './restaurants/restaurants.module';
-// import { Restaurant } from './restaurants/entities/restaurant.entitiy';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
@@ -28,6 +20,7 @@ import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -93,6 +86,7 @@ import { Payment } from './payments/entities/payment.entity';
     OrdersModule,
     CommonModule,
     PaymentsModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [],
   providers: [],

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
 import { User } from 'src/users/entities/user.entity';
@@ -17,6 +18,7 @@ export class PaymentsService {
     private readonly payments: Repository<Payment>,
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async createPayment(
@@ -71,4 +73,18 @@ export class PaymentsService {
       };
     }
   }
+
+  /*
+  @Cron('30 * * * * *', { name: 'myJob' })
+  async checkForPayments() {
+    console.log('Checking for payments...(cron)');
+    const job = this.schedulerRegistry.getCronJob('myJob');
+    console.log(job);
+    job.stop();
+  }
+  @Interval(5000)
+  async checkForPaymentsI() {
+    console.log('Checking for payments...(Interval)');
+  }
+  */
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PubSub } from 'graphql-subscriptions';
 import {
   NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATE,
   NEW_PENDING_ORDER,
   PUB_SUB,
 } from 'src/common/common.constants';
@@ -218,9 +219,10 @@ export class OrdersService {
     { id: orderId, status }: EditOrderInput,
   ): Promise<EditOrderOutput> {
     try {
-      const order = await this.orders.findOne(orderId, {
-        relations: ['restaurant'],
-      });
+      const order = await this.orders.findOne(
+        orderId,
+        // { relations: ['restaurant', 'customer', 'driver'] } // 대신 eager relation옵션을 줄 것임(entity에서)
+      );
       if (!order) {
         return {
           ok: false,
@@ -259,19 +261,23 @@ export class OrdersService {
           error: "You can't do that.",
         };
       }
-      const newOrder = await this.orders.save({
+      await this.orders.save({
+        // save()안에 create()이 없을땐 온전한 order 객체를 return하지 않음
         id: orderId,
         status,
       });
-      // console.log(newOrder); // save()안에 create()이 없을땐 온전한 order 객체를 return하지 않음
+
+      const newOrder = { ...order, status };
       if (user.role === UserRole.Owner) {
         if (status === OrderStatus.Cooked) {
           await this.pubsub.publish(NEW_COOKED_ORDER, {
-            cookedOrders: { ...order, status },
+            cookedOrders: newOrder,
           }); // payload는 resolver이름으로 줘야 함
         }
       }
-
+      await this.pubsub.publish(NEW_ORDER_UPDATE, {
+        orderUpdates: newOrder,
+      });
       return {
         ok: true,
       };

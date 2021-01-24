@@ -43,6 +43,7 @@ export class Order extends CoreEntity {
   @ManyToOne(type => User, user => user.orders, {
     onDelete: 'SET NULL',
     nullable: true,
+    eager: true,
   })
   customer?: User;
 
@@ -53,6 +54,7 @@ export class Order extends CoreEntity {
   @ManyToOne(type => User, user => user.rides, {
     onDelete: 'SET NULL',
     nullable: true,
+    eager: true,
   })
   driver?: User; // 주문을 넣을땐 아직 driver가 배정되지 않았기 때문에 nullable: true
   @RelationId((order: Order) => order.driver)
@@ -63,11 +65,12 @@ export class Order extends CoreEntity {
     // user가 많은 orders를 가졌던 것 처럼 restaurant도 orders를 가짐
     onDelete: 'SET NULL',
     nullable: true,
+    eager: true,
   })
   restaurant?: Restaurant;
 
   @Field(type => [OrderItem])
-  @ManyToMany(type => OrderItem)
+  @ManyToMany(type => OrderItem, { eager: true })
   @JoinTable() // dish쪽에선 어떤 사람이 주문했는지 알 수 없지만 order쪽에선 알 수 있으므로 order : dish의 ManyToMany relation의 주도권은 order가 가져감
   items: OrderItem[]; // dishOption이 없으면 그냥 Dish[]로 저장해도 되지만 dishOption은 반드시 필요함 -> 따로 분리 : order-item.entity (Dish[] 대신)
 

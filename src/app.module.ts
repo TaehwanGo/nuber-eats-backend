@@ -70,10 +70,16 @@ import { OrderItem } from './orders/entities/order-item.entity';
     GraphQLModule.forRoot({
       installSubscriptionHandlers: true, // 웹 소켓 기능 추가 (ws://localhost:3000/graphql)
       autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
-      context: ({ req }) => {
+      context: ({ req, connection }) => {
         // req는 http request 그러나 subscription에 연결하려는 순간 HTTP route을 거치지 않고 Web Socket route를 거치고 있음 -> req가 undefined이 됨
         // ws은 http에서 쿠키로 주고 받는것과 달리 한번 연결되면 계속 연결을 유지함
-        return { user: req['user'] };
+        if (req) {
+          // HTTP로 연결
+          return { user: req['user'] };
+        } else {
+          // WebSocket으로 연결
+          console.log(connection);
+        }
       }, // req:Request (JwtMiddleware)
     }),
     // RestaurantsModule,

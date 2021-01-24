@@ -8,9 +8,9 @@ import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 @ObjectType()
 @Entity()
 export class Payment extends CoreEntity {
-  @Field(type => Int)
+  @Field(type => String)
   @Column()
-  transactionId: number;
+  transactionId: string; // paddle이 넘겨주는 것
 
   @Field(type => User)
   @ManyToOne(type => User, user => user.payments)
@@ -23,6 +23,7 @@ export class Payment extends CoreEntity {
   @ManyToOne(type => Restaurant) // restaurant에서 payment로 접근할일이 없기 대문에 restaurant entity엔 만들지 않음
   restaurant: Restaurant;
 
+  @Field(type => Int)
   @RelationId((payment: Payment) => payment.restaurant)
   restaurantId: number;
 }

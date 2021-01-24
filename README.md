@@ -66,4 +66,8 @@ The Backend of Nuber Eats Clone
     - order status는 orderUpdate라는 trigger를 listening
     - editOrder가 order status를 update할 때마다 orderUpdate를 trigger
 
+  - Add Driver to Order
+
+## Payment
+
 - Payments(using paddle) - CRON jobs : 특정 작업을 정해진 시간에 하는 것

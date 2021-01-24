@@ -72,13 +72,30 @@ export class OrdersResolver {
     return this.pubsub.asyncIterator(NEW_PENDING_ORDER);
   }
 
-  @Subscription(returns => Order)
+  @Subscription(returns => Order) // driver는 모든 restaurant에 들어오는 주문을 확인 가능 : filter 사용 안함
   @Role(['Delivery'])
   cookedOrders() {
     return this.pubsub.asyncIterator(NEW_COOKED_ORDER);
   }
 
-  @Subscription(returns => Order)
+  @Subscription(returns => Order, {
+    filter: (
+      { orderUpdates: order }: { orderUpdates: Order }, // type 추가(typescript)
+      { input }: { input: OrderUpdatesInput },
+      { user }: { user: User },
+    ) => {
+      // order와 관련된 owner, customer, (driver는 다 볼수 있음) 만 볼수 있게 해야 함
+      console.log(order);
+      if (
+        order.driverId !== user.id &&
+        order.customerId !== user.id &&
+        order.restaurant.ownerId !== user.id
+      ) {
+        return false; // 로그인된 user가 order와 관련이 하나라도 관련이 있으면 if문을 실행하지 않음
+      }
+      return order.id === input.id; // 유저가 원하는 order의 update만 볼 수 있음
+    },
+  })
   @Role(['Any'])
   orderUpdates(@Args('input') orderUpdatesInput: OrderUpdatesInput) {
     return this.pubsub.asyncIterator(NEW_ORDER_UPDATE);

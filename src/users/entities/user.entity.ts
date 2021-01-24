@@ -11,6 +11,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
 import { Order } from 'src/orders/entities/order.entity';
+import { Payment } from 'src/payments/entities/payment.entity';
 
 // type UserRole = 'client' | 'owner' | 'deliver';
 export enum UserRole {
@@ -56,6 +57,10 @@ export class User extends CoreEntity {
   @Field(type => [Order])
   @OneToMany(type => Order, order => order.driver)
   rides: Order[]; // for driver
+
+  @Field(type => [Payment])
+  @OneToMany(type => Payment, payment => payment.user)
+  payments: Payment[];
 
   @BeforeInsert()
   @BeforeUpdate() // 왜 BeforeUpdate()가 실행되지 않을까? 저장할 때 Repository.update() -> save()로 변경

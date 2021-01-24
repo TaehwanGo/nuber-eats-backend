@@ -5,9 +5,8 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Dish } from 'src/restaurants/entities/dish.endtity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
 import { User } from 'src/users/entities/user.entity';
 import {
@@ -16,7 +15,6 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   RelationId,
 } from 'typeorm';
 import { OrderItem } from './order-item.entity';
@@ -35,7 +33,7 @@ export enum OrderStatus {
  */
 registerEnumType(OrderStatus, { name: 'OrderStatus' }); // you can reference the OrderStatus in our types for graphQL field
 
-@InputType('OrderInputType', { isAbstract: true }) // isAbstract: true는 InputType이 스키마에 포함되지 않는 다는 뜻 : 직접 사용하는 게 아닌 확장시킨다는 말(이해 못 함)
+@InputType('OrderInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Order extends CoreEntity {

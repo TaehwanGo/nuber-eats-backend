@@ -26,6 +26,8 @@ import { Dish } from './restaurants/entities/dish.endtity';
 import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { PaymentsModule } from './payments/payments.module';
+import { Payment } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
@@ -65,6 +67,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
         Dish,
         Order,
         OrderItem,
+        Payment,
       ], // **1. entities: [Restaurant] 이것 덕분에 Restaurant가 DB가 되는 것
     }),
     GraphQLModule.forRoot({
@@ -89,6 +92,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
     AuthModule,
     OrdersModule,
     CommonModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

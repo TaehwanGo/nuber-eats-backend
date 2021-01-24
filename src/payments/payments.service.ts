@@ -18,7 +18,6 @@ export class PaymentsService {
     private readonly payments: Repository<Payment>,
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
-    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async createPayment(
@@ -46,6 +45,12 @@ export class PaymentsService {
           restaurant,
         }),
       );
+      restaurant.isPromoted = true;
+      const date = new Date(); // 현재 시간
+      date.setDate(date.getDate() + 7); // promote 기간은 7일
+      console.log('promotedUntil date:', date);
+      restaurant.promotedUntil = date;
+      this.restaurants.save(restaurant);
       return {
         ok: true,
       };

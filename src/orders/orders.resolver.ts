@@ -17,6 +17,7 @@ import {
   PUB_SUB,
 } from 'src/common/common.constants';
 import { OrderUpdatesInput } from 'src/users/dtos/order-updates.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dtos/take-order.dto';
 
 @Resolver(of => Order)
 export class OrdersResolver {
@@ -85,7 +86,7 @@ export class OrdersResolver {
       { user }: { user: User },
     ) => {
       // order와 관련된 owner, customer, (driver는 다 볼수 있음) 만 볼수 있게 해야 함
-      console.log(order);
+      // console.log(order);
       if (
         order.driverId !== user.id &&
         order.customerId !== user.id &&
@@ -99,6 +100,15 @@ export class OrdersResolver {
   @Role(['Any'])
   orderUpdates(@Args('input') orderUpdatesInput: OrderUpdatesInput) {
     return this.pubsub.asyncIterator(NEW_ORDER_UPDATE);
+  }
+
+  @Mutation(returns => TakeOrderOutput) // delivery driver를 order에 등록
+  @Role(['Delivery'])
+  takeOrder(
+    @AuthUser() driver: User,
+    @Args('input') takeOrderInput: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    return this.ordersService.takeOrder(driver, takeOrderInput);
   }
   /*
   @Mutation(returns => Boolean)

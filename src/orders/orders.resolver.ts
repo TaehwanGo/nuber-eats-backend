@@ -10,7 +10,11 @@ import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { PubSub } from 'graphql-subscriptions';
 import { Inject } from '@nestjs/common';
-import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
+import {
+  NEW_COOKED_ORDER,
+  NEW_PENDING_ORDER,
+  PUB_SUB,
+} from 'src/common/common.constants';
 
 @Resolver(of => Order)
 export class OrdersResolver {
@@ -57,7 +61,6 @@ export class OrdersResolver {
 
   @Subscription(returns => Order, {
     filter: ({ pendingOrders: { ownerId } }, _, { user }) => {
-      console.log(ownerId, user.id);
       return ownerId === user.id;
     },
     resolve: ({ pendingOrders: { order } }) => order,
@@ -65,6 +68,12 @@ export class OrdersResolver {
   @Role(['Owner'])
   pendingOrders() {
     return this.pubsub.asyncIterator(NEW_PENDING_ORDER);
+  }
+
+  @Subscription(returns => Order)
+  @Role(['Delivery'])
+  cookedOrders() {
+    return this.pubsub.asyncIterator(NEW_COOKED_ORDER);
   }
   /*
   @Mutation(returns => Boolean)

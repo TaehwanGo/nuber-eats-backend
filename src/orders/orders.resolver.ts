@@ -10,7 +10,7 @@ import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { PubSub } from 'graphql-subscriptions';
 import { Inject } from '@nestjs/common';
-import { PUB_SUB } from 'src/common/common.constants';
+import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
 
 @Resolver(of => Order)
 export class OrdersResolver {
@@ -25,7 +25,7 @@ export class OrdersResolver {
     @AuthUser() customer: User,
     @Args('input') createOrderInput: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
-    return this.ordersService.createOrderInput(customer, createOrderInput);
+    return this.ordersService.createOrder(customer, createOrderInput);
   }
 
   @Query(returns => GetOrdersOutput)
@@ -55,6 +55,17 @@ export class OrdersResolver {
     return this.ordersService.editOrder(user, editOrderInput);
   }
 
+  @Subscription(returns => Order, {
+    filter: (payload, _, context) => {
+      console.log(payload, context['user']); // context의 user는 owner이고 payload에 포함된 user는 Client이네
+      return true;
+    },
+  })
+  @Role(['Owner'])
+  pendingOrders() {
+    return this.pubsub.asyncIterator(NEW_PENDING_ORDER);
+  }
+  /*
   @Mutation(returns => Boolean)
   async popatoReady(@Args('potatoId') potatoId: number) {
     await this.pubsub.publish('hotPotatos', {
@@ -62,7 +73,6 @@ export class OrdersResolver {
     });
     return true;
   }
-
   // variable : subscription에 적용한 args
   // context: graphql의 context
   @Subscription(returns => String, {
@@ -79,4 +89,5 @@ export class OrdersResolver {
     // console.log(user);
     return this.pubsub.asyncIterator('hotPotatos');
   }
+  */
 }

@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
 import { Dish } from 'src/restaurants/entities/dish.endtity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entitiy';
 import { User, UserRole } from 'src/users/entities/user.entity';
@@ -22,8 +24,9 @@ export class OrdersService {
     private readonly orderItems: Repository<OrderItem>,
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
+    @Inject(PUB_SUB) private readonly pubsub: PubSub,
   ) {}
-  async createOrderInput(
+  async createOrder(
     customer: User,
     { restaurantId, items }: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
@@ -51,27 +54,30 @@ export class OrdersService {
         }
         // item의 options의 항목들이 DB(dish repository)에 있는지 확인 후 최종 음식값을 계산
         let dishFinalPrice = dish.price;
-        for (const itemOption of item.options) {
-          // 요금을 계산하기 위한 for of 문
-          //   console.log(itemOption);
-          const dishOption = dish.options.find(
-            // array.find() 이구나 return값은 조건이 일치하면 return하네, 일치 안하면 undefined을 return
-            dishOption => dishOption.name === itemOption.name, // dishOption은 어디서 온거지? options array의 각 항목
-          );
-          //   console.log('dishOption:', dishOption);
-          if (dishOption) {
-            if (dishOption.extra) {
-              dishFinalPrice += dishOption.extra;
-              //   console.log(dishOption.extra);
-            }
-            if (dishOption.choices) {
-              const dishOptionChoice = dishOption.choices.find(
-                optionChoice => optionChoice.name === itemOption.choice,
-              );
-              //   console.log(dishOptionChoice);
-              //   console.log(dishOptionChoice.extra);
-              if (dishOptionChoice.extra) {
-                dishFinalPrice += dishOptionChoice.extra;
+        // console.log('item:', item, 'item.options:', item.options);
+        if (item.options) {
+          for (const itemOption of item.options) {
+            // 요금을 계산하기 위한 for of 문
+            //   console.log(itemOption);
+            const dishOption = dish.options.find(
+              // array.find() 이구나 return값은 조건이 일치하면 return하네, 일치 안하면 undefined을 return
+              dishOption => dishOption.name === itemOption.name, // dishOption은 어디서 온거지? options array의 각 항목
+            );
+            //   console.log('dishOption:', dishOption);
+            if (dishOption) {
+              if (dishOption.extra) {
+                dishFinalPrice += dishOption.extra;
+                //   console.log(dishOption.extra);
+              }
+              if (dishOption.choices) {
+                const dishOptionChoice = dishOption.choices.find(
+                  optionChoice => optionChoice.name === itemOption.choice,
+                );
+                //   console.log(dishOptionChoice);
+                //   console.log(dishOptionChoice.extra);
+                if (dishOptionChoice.extra) {
+                  dishFinalPrice += dishOptionChoice.extra;
+                }
               }
             }
           }
@@ -95,6 +101,7 @@ export class OrdersService {
         }),
       );
       //   console.log(order);
+      await this.pubsub.publish(NEW_PENDING_ORDER, { pendingOrders: order });
       return { ok: true };
     } catch (err) {
       console.log(err);

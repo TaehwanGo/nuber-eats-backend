@@ -56,10 +56,11 @@ export class OrdersResolver {
   }
 
   @Subscription(returns => Order, {
-    filter: (payload, _, context) => {
-      console.log(payload, context['user']); // context의 user는 owner이고 payload에 포함된 user는 Client이네
-      return true;
+    filter: ({ pendingOrders: { ownerId } }, _, { user }) => {
+      console.log(ownerId, user.id);
+      return ownerId === user.id;
     },
+    resolve: ({ pendingOrders: { order } }) => order,
   })
   @Role(['Owner'])
   pendingOrders() {

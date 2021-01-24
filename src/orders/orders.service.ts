@@ -101,7 +101,9 @@ export class OrdersService {
         }),
       );
       //   console.log(order);
-      await this.pubsub.publish(NEW_PENDING_ORDER, { pendingOrders: order });
+      await this.pubsub.publish(NEW_PENDING_ORDER, {
+        pendingOrders: { order, ownerId: restaurant.ownerId },
+      });
       return { ok: true };
     } catch (err) {
       console.log(err);

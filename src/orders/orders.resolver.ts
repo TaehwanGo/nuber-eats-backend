@@ -56,17 +56,24 @@ export class OrdersResolver {
   }
 
   @Mutation(returns => Boolean)
-  popatoReady() {
-    this.pubsub.publish('hotPotatos', {
-      readyPotatos: 'Your potatos is ready. love you.',
+  async popatoReady(@Args('potatoId') potatoId: number) {
+    await this.pubsub.publish('hotPotatos', {
+      readyPotatos: potatoId, // payload
     });
     return true;
   }
 
-  @Subscription(returns => String)
+  // variable : subscription에 적용한 args
+  // context: graphql의 context
+  @Subscription(returns => String, {
+    filter: ({ readyPotatos }, { potatoId }) => {
+      return readyPotatos === potatoId;
+    },
+  })
   @Role(['Any'])
-  readyPotatos(@AuthUser() user: User) {
-    console.log(user);
+  readyPotatos(@Args('potatoId') potatoId: number) {
+    // @AuthUser() user: User
+    // console.log(user);
     return this.pubsub.asyncIterator('hotPotatos');
   }
 }

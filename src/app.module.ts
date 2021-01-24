@@ -71,16 +71,11 @@ import { OrderItem } from './orders/entities/order-item.entity';
       installSubscriptionHandlers: true, // 웹 소켓 기능 추가 (ws://localhost:3000/graphql)
       autoSchemaFile: true, // 메모리에 자동으로 만들어 져서 schema 파일을 따로 안만들어도 되게 하는 설정(code first & typescript라서 가능) // 아니면 이런식으로 파일이 만들어짐 autoSchemaFile: join(process.cwd(), 'src/schema.gql')
       context: ({ req, connection }) => {
-        // req는 http request 그러나 subscription에 연결하려는 순간 HTTP route을 거치지 않고 Web Socket route를 거치고 있음 -> req가 undefined이 됨
-        // ws은 http에서 쿠키로 주고 받는것과 달리 한번 연결되면 계속 연결을 유지함
-        if (req) {
-          // HTTP로 연결
-          return { user: req['user'] };
-        } else {
-          // WebSocket으로 연결
-          console.log(connection);
-        }
-      }, // req:Request (JwtMiddleware)
+        const TOKEN_KEY = 'x-jwt';
+        return {
+          token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY],
+        };
+      },
     }),
     // RestaurantsModule,
     UsersModule,
@@ -97,17 +92,4 @@ import { OrderItem } from './orders/entities/order-item.entity';
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  // app.use() requires a middleware function // 다시 app.module에서 아래와 같은 방식으로 middleware를 추가함
-  configure(consumer: MiddlewareConsumer) {
-    // main.ts에 app.use(jwtMiddleware); 를 추가 하는 것으로 대체 됨 : app전체에 적용
-    // app 전체에 적용할 middleware 설정
-    consumer
-      .apply(JwtMiddleware) //
-      .forRoutes({
-        // JwtMiddleware(class)에서 function으로 바꿈
-        path: '/graphql', // 특정 경로에 적용 <-> main.ts에 app.use를 사용하는 방식과 달리 특정경로에
-        method: RequestMethod.POST,
-      });
-  }
-}
+export class AppModule {}

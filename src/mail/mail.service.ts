@@ -32,8 +32,9 @@ export class MailService {
     form.append('template', template); // 'verify-email'
     // form.append('v:code', 'asdfqwer');
     // form.append('v:username', 'tony');
-    emailVars.forEach((eVar) => form.append(`v:${eVar.key}`, eVar.value));
+    emailVars.forEach(eVar => form.append(`v:${eVar.key}`, eVar.value));
     try {
+      /* // 나중에 메일건 재가입 또는 메일러 모듈 다른 것 붙여야 함 -> .env 파일도 수정필요
       await got(`https://api.mailgun.net/v3/${this.options.domain}/messages`, {
         // https: {
         //   rejectUnauthorized: false, // 나중에 prod 에선 삭제 해야 됨
@@ -47,6 +48,7 @@ export class MailService {
         body: form,
         // body: 'testing body text',
       });
+      */
     } catch (error) {
       // e2e : Cannot log after tests are done. Did you forget to wait for something async in your test? // mailgun has been disabled
       console.log('error from sendEmail:', error); // email이 안보내진다고 뭔가 서버에러를 일으키는것을 사용자는 원하지 않음

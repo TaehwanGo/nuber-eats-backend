@@ -178,8 +178,8 @@ export class RestaurantService {
         where: {
           category,
         },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: 3,
+        skip: (page - 1) * 3,
         order: {
           isPromoted: 'DESC', // true is top
         },
@@ -191,7 +191,8 @@ export class RestaurantService {
         ok: true,
         restaurants,
         category,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
+        totalResults,
       };
     } catch (err) {
       return {
@@ -207,8 +208,8 @@ export class RestaurantService {
   }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 3,
+        take: 3,
         order: {
           isPromoted: 'DESC', // true is top
         },
@@ -216,7 +217,7 @@ export class RestaurantService {
       return {
         ok: true,
         restaurants,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
         totalResults,
       };
     } catch (err) {
@@ -260,15 +261,15 @@ export class RestaurantService {
       // custom repository를 만들고 그 안에 pagination함수를 구현: homework
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
         where: { name: Raw(name => `${name} ILike '%${query}%'`) }, // sql : name column에서 query가 포함된 것을 찾음(restaurant table에서) // ILike : insensitive(대소문자 구분없이 찾음)
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 3,
+        take: 3,
       });
 
       return {
         ok: true,
         totalResults,
         restaurants,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
       };
     } catch (err) {
       return {

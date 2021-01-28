@@ -47,7 +47,9 @@ export class User extends CoreEntity {
   verified: boolean;
 
   @Field(type => [Restaurant])
-  @OneToMany(type => Restaurant, restaurant => restaurant.owner)
+  @OneToMany(type => Restaurant, restaurant => restaurant.owner, {
+    eager: true,
+  })
   restaurants: Restaurant[];
 
   @Field(type => [Order])
